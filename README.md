@@ -14,7 +14,7 @@ pip install brightdata-sdk
 
 ## Quick Start
 
-Create a [Bright Data](https://brightdata.com/) account and copy your API key
+Create a [Bright Data](https://brightdata.com/cp/setting/) account and copy your API key
 
 ### Initialize the Client
 
