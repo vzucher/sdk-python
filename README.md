@@ -1,5 +1,5 @@
 # BRIGHTDATA PYTHON SDK - WORLD-CLASS REFACTORING
-## 100/100 Enterprise-Grade SDK Development Strategy
+## Enterprise-Grade SDK Development Strategy
 
 ---
 
