@@ -214,9 +214,9 @@ def test_amazon_products():
     
     print(f"\nScraping Amazon product: {url}")
     print("⚠️  This will use Bright Data credits!")
-    confirm = input("Continue? (yes/no): ").strip().lower()
+    confirm = input("Continue? (y/n): ").strip().lower()
     
-    if confirm != 'yes':
+    if confirm != 'y':
         print("Cancelled")
         return
     
@@ -250,9 +250,9 @@ def test_amazon_reviews():
     
     print(f"\nScraping reviews from: {url}")
     print("⚠️  This will use Bright Data credits!")
-    confirm = input("Continue? (yes/no): ").strip().lower()
+    confirm = input("Continue? (y/n): ").strip().lower()
     
-    if confirm != 'yes':
+    if confirm != 'y':
         print("Cancelled")
         return
     
@@ -283,9 +283,9 @@ def test_linkedin_profiles():
     
     print(f"\nScraping LinkedIn profile: {url}")
     print("⚠️  This will use Bright Data credits!")
-    confirm = input("Continue? (yes/no): ").strip().lower()
+    confirm = input("Continue? (y/n): ").strip().lower()
     
-    if confirm != 'yes':
+    if confirm != 'y':
         print("Cancelled")
         return
     
@@ -313,9 +313,9 @@ def test_linkedin_jobs_url():
     
     print(f"\nScraping LinkedIn job: {url}")
     print("⚠️  This will use Bright Data credits!")
-    confirm = input("Continue? (yes/no): ").strip().lower()
+    confirm = input("Continue? (y/n): ").strip().lower()
     
-    if confirm != 'yes':
+    if confirm != 'y':
         print("Cancelled")
         return
     
@@ -341,9 +341,9 @@ def test_google_search():
     
     print(f"\nSearching Google: {query}")
     print("⚠️  This will use Bright Data credits!")
-    confirm = input("Continue? (yes/no): ").strip().lower()
+    confirm = input("Continue? (y/n): ").strip().lower()
     
-    if confirm != 'yes':
+    if confirm != 'y':
         print("Cancelled")
         return
     
@@ -374,7 +374,7 @@ def test_linkedin_job_search():
     """Test LinkedIn job search (discovery)."""
     keyword = input("Enter job keyword (e.g., 'python developer'): ").strip()
     location = input("Enter location (e.g., 'New York', or Enter to skip): ").strip()
-    remote = input("Remote only? (yes/no, or Enter to skip): ").strip().lower()
+    remote = input("Remote only? (y/n, or Enter to skip): ").strip().lower()
     
     if not keyword:
         print("❌ Keyword required")
@@ -383,12 +383,12 @@ def test_linkedin_job_search():
     print(f"\nSearching LinkedIn jobs: {keyword}")
     if location:
         print(f"Location: {location}")
-    if remote == 'yes':
+    if remote == 'y':
         print("Remote: Yes")
     print("⚠️  This will use Bright Data credits!")
-    confirm = input("Continue? (yes/no): ").strip().lower()
+    confirm = input("Continue? (y/n): ").strip().lower()
     
-    if confirm != 'yes':
+    if confirm != 'y':
         print("Cancelled")
         return
     
@@ -396,7 +396,7 @@ def test_linkedin_job_search():
         result = client.search.linkedin.jobs(
             keyword=keyword,
             location=location if location else None,
-            remote=True if remote == 'yes' else None,
+            remote=True if remote == 'y' else None,
             timeout=180
         )
         
@@ -420,9 +420,9 @@ def test_linkedin_profile_search():
     
     print(f"\nSearching LinkedIn profiles: {first_name} {last_name}")
     print("⚠️  This will use Bright Data credits!")
-    confirm = input("Continue? (yes/no): ").strip().lower()
+    confirm = input("Continue? (y/n): ").strip().lower()
     
-    if confirm != 'yes':
+    if confirm != 'y':
         print("Cancelled")
         return
     
@@ -450,22 +450,22 @@ def test_chatgpt_search():
         print("❌ Prompt required")
         return
     
-    web_search = input("Enable web search? (yes/no): ").strip().lower()
+    web_search = input("Enable web search? (y/n): ").strip().lower()
     
     print(f"\nSending prompt to ChatGPT: {prompt}")
-    if web_search == 'yes':
+    if web_search == 'y':
         print("Web search: Enabled")
     print("⚠️  This will use Bright Data credits!")
-    confirm = input("Continue? (yes/no): ").strip().lower()
+    confirm = input("Continue? (y/n): ").strip().lower()
     
-    if confirm != 'yes':
+    if confirm != 'y':
         print("Cancelled")
         return
     
     try:
         result = client.search.chatGPT.chatGPT(
             prompt=prompt,
-            webSearch=True if web_search == 'yes' else False,
+            webSearch=True if web_search == 'y' else False,
             sync=True
         )
         
@@ -518,9 +518,9 @@ def test_sync_vs_async():
     
     print(f"\nComparing sync vs async modes for: {url}")
     print("⚠️  This will use Bright Data credits!")
-    confirm = input("Continue? (yes/no): ").strip().lower()
+    confirm = input("Continue? (y/n): ").strip().lower()
     
-    if confirm != 'yes':
+    if confirm != 'y':
         print("Cancelled")
         return
     
