@@ -108,10 +108,11 @@ class ChatGPTSearchService:
                     f"Examples: US, GB, FR, DE"
                 )
         
-        # Build payload
+        # Build payload (URL fixed to https://chatgpt.com per spec)
         payload = []
         for i in range(batch_size):
             item: Dict[str, Any] = {
+                "url": "https://chatgpt.com",  # Fixed URL per API spec
                 "prompt": prompts[i],
                 "country": countries[i].upper() if countries[i] else "US",
                 "web_search": web_searches[i] if isinstance(web_searches[i], bool) else False,
