@@ -426,6 +426,57 @@ print(f"Zones: {info['zone_count']}")
 print(f"Active zones: {[z['name'] for z in info['zones']]}")
 ```
 
+### Zone Management
+
+The SDK can automatically create required zones if they don't exist, or you can manage zones manually.
+
+#### Automatic Zone Creation
+
+Enable automatic zone creation when initializing the client:
+
+```python
+client = BrightDataClient(
+    token="your_token",
+    auto_create_zones=True  # Automatically create zones if missing
+)
+
+# Zones are created on first API call
+async with client:
+    # sdk_unlocker, sdk_serp, and sdk_browser zones created automatically if needed
+    result = await client.scrape.amazon.products(url="...")
+```
+
+#### Manual Zone Management
+
+List and manage zones programmatically:
+
+```python
+# List all zones
+zones = await client.list_zones()
+zones = client.list_zones_sync()  # Synchronous version
+
+for zone in zones:
+    print(f"Zone: {zone['name']} (Type: {zone.get('type', 'unknown')})")
+
+# Advanced: Use ZoneManager directly
+from brightdata import ZoneManager
+
+async with client.engine:
+    zone_manager = ZoneManager(client.engine)
+
+    # Ensure specific zones exist
+    await zone_manager.ensure_required_zones(
+        web_unlocker_zone="my_custom_zone",
+        serp_zone="my_serp_zone"
+    )
+```
+
+**Zone Creation API:**
+- Endpoint: `POST https://api.brightdata.com/zone`
+- Zones are created via the Bright Data API
+- Supported zone types: `unblocker`, `serp`, `browser`
+- Automatically handles duplicate zones gracefully
+
 ### Result Objects
 
 All operations return rich result objects with timing and metadata:

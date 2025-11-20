@@ -205,7 +205,17 @@ class TestClientConfiguration:
             auto_create_zones=True
         )
         assert client.auto_create_zones is True
-    
+
+    def test_zones_ensured_flag_starts_false(self):
+        """Test _zones_ensured flag starts as False."""
+        client = BrightDataClient(token="test_token_123456789")
+        assert client._zones_ensured is False
+
+    def test_zone_manager_starts_as_none(self):
+        """Test zone manager starts as None."""
+        client = BrightDataClient(token="test_token_123456789")
+        assert client._zone_manager is None
+
     def test_default_timeout_is_30(self):
         """Test default timeout is 30 seconds."""
         client = BrightDataClient(token="test_token_123456789")

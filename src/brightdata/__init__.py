@@ -26,8 +26,9 @@ from .exceptions import (
     SSLError,
 )
 
-# Export WebUnlockerService for advanced usage
+# Export services for advanced usage
 from .api.web_unlocker import WebUnlockerService
+from .core.zone_manager import ZoneManager
 
 __all__ = [
     "__version__",
@@ -51,4 +52,5 @@ __all__ = [
     "SSLError",
     # Services
     "WebUnlockerService",
+    "ZoneManager",
 ]

@@ -20,6 +20,7 @@ except ImportError:
     pass
 
 from .core.engine import AsyncEngine
+from .core.zone_manager import ZoneManager
 from .api.web_unlocker import WebUnlockerService
 from .api.scrape_service import ScrapeService, GenericScraper
 from .api.search_service import SearchService
@@ -134,9 +135,11 @@ class BrightDataClient:
         self._search_service: Optional[SearchService] = None
         self._crawler_service: Optional[CrawlerService] = None
         self._web_unlocker_service: Optional[WebUnlockerService] = None
+        self._zone_manager: Optional[ZoneManager] = None
         self._is_connected = False
         self._account_info: Optional[Dict[str, Any]] = None
-        
+        self._zones_ensured = False
+
         if validate_token:
             self._validate_token_sync()
     
@@ -198,8 +201,32 @@ class BrightDataClient:
                 f"Failed to validate token: {str(e)}\n"
                 f"Check your token at: https://brightdata.com/cp/api_keys"
             )
-    
-    
+
+    async def _ensure_zones(self) -> None:
+        """
+        Ensure required zones exist if auto_create_zones is enabled.
+
+        This is called automatically before the first API request.
+        Only runs once per client instance.
+
+        Raises:
+            ZoneError: If zone creation fails
+            AuthenticationError: If API token lacks permissions
+        """
+        if self._zones_ensured or not self.auto_create_zones:
+            return
+
+        if self._zone_manager is None:
+            self._zone_manager = ZoneManager(self.engine)
+
+        await self._zone_manager.ensure_required_zones(
+            web_unlocker_zone=self.web_unlocker_zone,
+            serp_zone=self.serp_zone,
+            browser_zone=self.browser_zone
+        )
+        self._zones_ensured = True
+
+
     @property
     def scrape(self) -> ScrapeService:
         """
@@ -380,8 +407,34 @@ class BrightDataClient:
             return asyncio.run(self.test_connection())
         except Exception:
             return False
-    
-    
+
+    async def list_zones(self) -> List[Dict[str, Any]]:
+        """
+        List all active zones in your Bright Data account.
+
+        Returns:
+            List of zone dictionaries with their configurations
+
+        Raises:
+            ZoneError: If zone listing fails
+            AuthenticationError: If authentication fails
+
+        Example:
+            >>> zones = await client.list_zones()
+            >>> print(f"Found {len(zones)} zones")
+            >>> for zone in zones:
+            ...     print(f"  - {zone['name']}: {zone.get('type', 'unknown')}")
+        """
+        async with self.engine:
+            if self._zone_manager is None:
+                self._zone_manager = ZoneManager(self.engine)
+            return await self._zone_manager.list_zones()
+
+    def list_zones_sync(self) -> List[Dict[str, Any]]:
+        """Synchronous version of list_zones()."""
+        return asyncio.run(self.list_zones())
+
+
     async def scrape_url_async(
         self,
         url: Union[str, List[str]],
@@ -419,6 +472,7 @@ class BrightDataClient:
     async def __aenter__(self):
         """Async context manager entry."""
         await self.engine.__aenter__()
+        await self._ensure_zones()
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
