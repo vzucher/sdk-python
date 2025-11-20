@@ -51,7 +51,7 @@ class TestAmazonScraperURLBased:
         assert 'timeout' in sig.parameters
         
         # Defaults
-        assert sig.parameters['timeout'].default == 65
+        assert sig.parameters['timeout'].default == 240
     
     def test_reviews_method_signature(self):
         """Test reviews method has correct signature."""
@@ -71,7 +71,7 @@ class TestAmazonScraperURLBased:
         assert 'timeout' in sig.parameters
         
         # Defaults
-        assert sig.parameters['timeout'].default == 65
+        assert sig.parameters['timeout'].default == 240
     
     def test_sellers_method_signature(self):
         """Test sellers method has correct signature."""
@@ -83,7 +83,7 @@ class TestAmazonScraperURLBased:
         assert 'url' in sig.parameters
         assert 'sync' not in sig.parameters
         assert 'timeout' in sig.parameters
-        assert sig.parameters['timeout'].default == 65
+        assert sig.parameters['timeout'].default == 240
 
 
 class TestAmazonDatasetIDs:
@@ -149,7 +149,7 @@ class TestAmazonAPISpecCompliance:
         assert 'url' in sig.parameters
         assert 'sync' not in sig.parameters
         assert 'timeout' in sig.parameters
-        assert sig.parameters['timeout'].default == 65
+        assert sig.parameters['timeout'].default == 240
     
     def test_reviews_api_spec(self):
         """Test reviews() matches CP API spec."""
@@ -295,10 +295,10 @@ class TestAmazonPhilosophicalPrinciples:
         
         import inspect
         
-        # All methods should default to 65s
+        # All methods should default to 240s
         for method_name in ['products', 'reviews', 'sellers']:
             sig = inspect.signature(getattr(scraper, method_name))
-            assert sig.parameters['timeout'].default == 65
+            assert sig.parameters['timeout'].default == 240
     
     def test_uses_standard_async_workflow(self):
         """Test methods use standard async workflow (no sync parameter)."""

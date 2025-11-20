@@ -336,7 +336,7 @@ class BrightDataClient:
         
         try:
             async with self.engine:
-                async with await self.engine.get_from_url(
+                async with self.engine.get_from_url(
                     f"{self.engine.BASE_URL}/zone/get_active_zones"
                 ) as zones_response:
                     if zones_response.status == 200:

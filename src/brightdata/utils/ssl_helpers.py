@@ -39,7 +39,14 @@ def is_ssl_certificate_error(error: Exception) -> bool:
         return True
     
     # Check error message for SSL-related keywords
-    error_str = str(error).lower()
+    try:
+        error_str = str(error)
+        if error_str is None:
+            error_str = ""
+        error_str = error_str.lower()
+    except (TypeError, AttributeError):
+        # If __str__ returns None or raises an error, treat as non-SSL error
+        return False
     ssl_keywords = [
         "certificate verify failed",
         "certificate verify",

@@ -143,7 +143,8 @@ class TestGoogleSERPService:
         engine = AsyncEngine("test_token_123456789")
         service = GoogleSERPService(engine)
         
-        normalized = service.normalize_serp_data({})
+        # Normalization is done via data_normalizer attribute
+        normalized = service.data_normalizer.normalize({})
         assert "results" in normalized
         assert normalized["results"] == []
 

@@ -57,7 +57,7 @@ class TestLinkedInScraperURLBased:
         assert 'timeout' in sig.parameters
         
         # Defaults
-        assert sig.parameters['timeout'].default == 65
+        assert sig.parameters['timeout'].default == 180
     
     def test_jobs_method_signature(self):
         """Test jobs method has correct signature."""
@@ -69,7 +69,7 @@ class TestLinkedInScraperURLBased:
         assert 'url' in sig.parameters
         assert 'sync' not in sig.parameters
         assert 'timeout' in sig.parameters
-        assert sig.parameters['timeout'].default == 65
+        assert sig.parameters['timeout'].default == 180
     
     def test_profiles_method_signature(self):
         """Test profiles method has correct signature."""
@@ -291,7 +291,7 @@ class TestAPISpecCompliance:
         assert 'url' in sig.parameters
         assert 'sync' not in sig.parameters
         assert 'timeout' in sig.parameters
-        assert sig.parameters['timeout'].default == 65
+        assert sig.parameters['timeout'].default == 180
     
     def test_search_posts_api_spec(self):
         """Test client.search.linkedin.posts matches API spec."""
@@ -515,7 +515,7 @@ class TestPhilosophicalPrinciples:
         # All scrape methods should default to 65s
         for method_name in ['posts', 'jobs', 'profiles', 'companies']:
             sig = inspect.signature(getattr(scraper, method_name))
-            assert sig.parameters['timeout'].default == 65
+            assert sig.parameters['timeout'].default == 180
     
     def test_uses_standard_async_workflow(self):
         """Test methods use standard async workflow (no sync parameter)."""

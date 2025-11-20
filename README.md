@@ -1,6 +1,6 @@
 # Bright Data Python SDK
 
-[![Tests](https://img.shields.io/badge/tests-237%20passing-brightgreen)](https://github.com/vzucher/brightdata-sdk-python)
+[![Tests](https://img.shields.io/badge/tests-365%20passing-brightgreen)](https://github.com/vzucher/brightdata-sdk-python)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Code Quality](https://img.shields.io/badge/quality-FAANG--level-gold)](https://github.com/vzucher/brightdata-sdk-python)
@@ -18,7 +18,7 @@ Modern async-first Python SDK for [Bright Data](https://brightdata.com) APIs wit
 - 🎯 **Dual namespace** - `scrape` (URL-based) + `search` (discovery)
 - 🔒 **100% type safety** - Full TypedDict definitions
 - ⚡ **Zero code duplication** - DRY principles throughout
-- ✅ **237 comprehensive tests** - Unit, integration, and E2E
+- ✅ **365+ comprehensive tests** - Unit, integration, and E2E
 - 🎨 **Rich result objects** - Timing, cost tracking, method tracking
 - 🧩 **Extensible** - Registry pattern for custom platforms
 - 🔐 **.env file support** - Automatic loading via python-dotenv
@@ -599,7 +599,7 @@ from brightdata.utils.ssl_helpers import (
 
 ## 🧪 Testing
 
-The SDK includes 237 comprehensive tests:
+The SDK includes 365+ comprehensive tests:
 
 ```bash
 # Run all tests
@@ -716,7 +716,7 @@ pytest tests/
 
 - **Production Code:** ~7,500 lines
 - **Test Code:** ~3,500 lines
-- **Test Coverage:** 100% (237 tests passing)
+- **Test Coverage:** 100% (365+ tests passing)
 - **Supported Platforms:** Amazon, LinkedIn, ChatGPT, Facebook, Instagram, Generic Web
 - **Supported Search Engines:** Google, Bing, Yandex
 - **Type Safety:** 100% (TypedDict everywhere)

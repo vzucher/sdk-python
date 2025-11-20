@@ -19,6 +19,21 @@ try:
 except ImportError:
     ChatGPTScraper = None
 
+try:
+    from .facebook.scraper import FacebookScraper
+except ImportError:
+    FacebookScraper = None
+
+try:
+    from .instagram.scraper import InstagramScraper
+except ImportError:
+    InstagramScraper = None
+
+try:
+    from .instagram.search import InstagramSearchScraper
+except ImportError:
+    InstagramSearchScraper = None
+
 
 __all__ = [
     "BaseWebScraper",
@@ -29,4 +44,7 @@ __all__ = [
     "AmazonScraper",
     "LinkedInScraper",
     "ChatGPTScraper",
+    "FacebookScraper",
+    "InstagramScraper",
+    "InstagramSearchScraper",
 ]

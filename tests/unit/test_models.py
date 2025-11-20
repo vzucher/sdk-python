@@ -225,6 +225,7 @@ class TestInterfaceRequirements:
         scrape = ScrapeResult(success=True, url="https://example.com", status="ready")
         assert hasattr(scrape, 'url')
         assert hasattr(scrape, 'platform')
+        assert hasattr(scrape, 'method')
     
     def test_search_specific_fields(self):
         """Test SearchResult specific fields."""
@@ -237,3 +238,132 @@ class TestInterfaceRequirements:
         crawl = CrawlResult(success=True, domain="example.com")
         assert hasattr(crawl, 'domain')
         assert hasattr(crawl, 'pages')
+
+
+class TestMethodFieldTracking:
+    """Tests for method field tracking in results."""
+    
+    def test_scrape_result_accepts_method_parameter(self):
+        """Test ScrapeResult accepts method parameter."""
+        result = ScrapeResult(
+            success=True,
+            url="https://example.com",
+            status="ready",
+            method="web_scraper",
+        )
+        assert result.method == "web_scraper"
+    
+    def test_scrape_result_method_can_be_web_unlocker(self):
+        """Test ScrapeResult method can be 'web_unlocker'."""
+        result = ScrapeResult(
+            success=True,
+            url="https://example.com",
+            status="ready",
+            method="web_unlocker",
+        )
+        assert result.method == "web_unlocker"
+    
+    def test_scrape_result_method_can_be_browser_api(self):
+        """Test ScrapeResult method can be 'browser_api'."""
+        result = ScrapeResult(
+            success=True,
+            url="https://example.com",
+            status="ready",
+            method="browser_api",
+        )
+        assert result.method == "browser_api"
+    
+    def test_scrape_result_method_defaults_to_none(self):
+        """Test ScrapeResult method defaults to None."""
+        result = ScrapeResult(
+            success=True,
+            url="https://example.com",
+            status="ready",
+        )
+        assert result.method is None
+    
+    def test_method_included_in_to_dict(self):
+        """Test method field is included in to_dict output."""
+        result = ScrapeResult(
+            success=True,
+            url="https://example.com",
+            status="ready",
+            method="web_scraper",
+        )
+        data = result.to_dict()
+        assert "method" in data
+        assert data["method"] == "web_scraper"
+    
+    def test_method_included_in_json(self):
+        """Test method field is included in JSON output."""
+        result = ScrapeResult(
+            success=True,
+            url="https://example.com",
+            status="ready",
+            method="web_unlocker",
+        )
+        json_str = result.to_json()
+        assert "method" in json_str
+        assert "web_unlocker" in json_str
+    
+    def test_method_persists_through_serialization(self):
+        """Test method field persists through serialization."""
+        import json
+        
+        result = ScrapeResult(
+            success=True,
+            url="https://example.com",
+            status="ready",
+            method="browser_api",
+        )
+        
+        # Serialize to dict and back
+        data = result.to_dict()
+        assert data["method"] == "browser_api"
+        
+        # Serialize to JSON and parse
+        json_str = result.to_json()
+        parsed = json.loads(json_str)
+        assert parsed["method"] == "browser_api"
+
+
+class TestMethodFieldIntegration:
+    """Test method field integration with scrapers."""
+    
+    def test_method_field_tracks_scraping_approach(self):
+        """Test method field effectively tracks scraping approach."""
+        # Test all three methods
+        methods = ["web_scraper", "web_unlocker", "browser_api"]
+        
+        for method in methods:
+            result = ScrapeResult(
+                success=True,
+                url="https://example.com",
+                status="ready",
+                method=method,
+            )
+            assert result.method == method
+            assert result.method in ["web_scraper", "web_unlocker", "browser_api"]
+    
+    def test_method_field_helps_identify_data_source(self):
+        """Test method field helps identify data source."""
+        # Different methods might have different characteristics
+        web_scraper = ScrapeResult(
+            success=True,
+            url="https://example.com",
+            status="ready",
+            method="web_scraper",
+            platform="linkedin",
+        )
+        
+        web_unlocker = ScrapeResult(
+            success=True,
+            url="https://example.com",
+            status="ready",
+            method="web_unlocker",
+        )
+        
+        # Both valid, but method provides context
+        assert web_scraper.method == "web_scraper"
+        assert web_unlocker.method == "web_unlocker"
+        assert web_scraper.method != web_unlocker.method
