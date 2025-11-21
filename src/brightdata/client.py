@@ -480,9 +480,41 @@ class BrightDataClient:
                 self._zone_manager = ZoneManager(self.engine)
             return await self._zone_manager.list_zones()
 
+    async def delete_zone(self, zone_name: str) -> None:
+        """
+        Delete a zone from your Bright Data account.
+
+        Args:
+            zone_name: Name of the zone to delete
+
+        Raises:
+            ZoneError: If zone deletion fails or zone doesn't exist
+            AuthenticationError: If authentication fails
+            APIError: If API request fails
+
+        Example:
+            >>> # Delete a test zone
+            >>> await client.delete_zone("test_zone_123")
+            >>> print("Zone deleted successfully")
+            
+            >>> # With error handling
+            >>> try:
+            ...     await client.delete_zone("my_zone")
+            ... except ZoneError as e:
+            ...     print(f"Failed to delete zone: {e}")
+        """
+        async with self.engine:
+            if self._zone_manager is None:
+                self._zone_manager = ZoneManager(self.engine)
+            await self._zone_manager.delete_zone(zone_name)
+
     def list_zones_sync(self) -> List[Dict[str, Any]]:
         """Synchronous version of list_zones()."""
-        return asyncio.run(self.list_zones())
+        return self._run_async_with_cleanup(self.list_zones())
+
+    def delete_zone_sync(self, zone_name: str) -> None:
+        """Synchronous version of delete_zone()."""
+        return self._run_async_with_cleanup(self.delete_zone(zone_name))
 
 
     async def scrape_url_async(

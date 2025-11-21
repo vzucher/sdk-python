@@ -202,6 +202,16 @@ class AsyncEngine:
         """Make GET request. Returns context manager."""
         return self.request("GET", endpoint, params=params, headers=headers)
     
+    def delete(
+        self,
+        endpoint: str,
+        json_data: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ):
+        """Make DELETE request. Returns context manager."""
+        return self.request("DELETE", endpoint, json_data=json_data, params=params, headers=headers)
+    
     def post_to_url(
         self,
         url: str,

@@ -310,3 +310,82 @@ class ZoneManager:
         except Exception as e:
             logger.error(f"Unexpected error listing zones: {e}")
             raise ZoneError(f"Unexpected error while listing zones: {str(e)}")
+
+    async def delete_zone(self, zone_name: str) -> None:
+        """
+        Delete a zone from your Bright Data account.
+
+        Args:
+            zone_name: Name of the zone to delete
+
+        Raises:
+            ZoneError: If zone deletion fails
+            AuthenticationError: If authentication fails
+            APIError: If API request fails
+
+        Example:
+            >>> zone_manager = ZoneManager(engine)
+            >>> await zone_manager.delete_zone("my_test_zone")
+            >>> print(f"Zone 'my_test_zone' deleted successfully")
+        """
+        if not zone_name or not isinstance(zone_name, str):
+            raise ZoneError("Zone name must be a non-empty string")
+
+        max_retries = 3
+        retry_delay = 1.0
+
+        for attempt in range(max_retries):
+            try:
+                logger.info(f"Attempting to delete zone: {zone_name}")
+                
+                # Prepare the payload for zone deletion
+                payload = {
+                    "zone": zone_name
+                }
+
+                async with self.engine.delete('/zone', json_data=payload) as response:
+                    if response.status == HTTP_OK:
+                        logger.info(f"Zone '{zone_name}' successfully deleted")
+                        return
+                    elif response.status in (HTTP_UNAUTHORIZED, HTTP_FORBIDDEN):
+                        error_text = await response.text()
+                        raise AuthenticationError(
+                            f"Authentication failed ({response.status}) deleting zone '{zone_name}': {error_text}"
+                        )
+                    elif response.status == HTTP_BAD_REQUEST:
+                        error_text = await response.text()
+                        # Check if zone doesn't exist
+                        if "not found" in error_text.lower() or "does not exist" in error_text.lower():
+                            raise ZoneError(
+                                f"Zone '{zone_name}' does not exist or has already been deleted"
+                            )
+                        raise ZoneError(
+                            f"Bad request ({HTTP_BAD_REQUEST}) deleting zone '{zone_name}': {error_text}"
+                        )
+                    else:
+                        error_text = await response.text()
+                        
+                        # Retry on server errors
+                        if attempt < max_retries - 1 and response.status >= HTTP_INTERNAL_SERVER_ERROR:
+                            logger.warning(
+                                f"Zone deletion failed (attempt {attempt + 1}/{max_retries}): "
+                                f"{response.status} - {error_text}"
+                            )
+                            await asyncio.sleep(retry_delay * (1.5 ** attempt))
+                            continue
+
+                        raise ZoneError(
+                            f"Failed to delete zone '{zone_name}' ({response.status}): {error_text}"
+                        )
+            except (AuthenticationError, ZoneError):
+                raise
+            except (aiohttp.ClientError, asyncio.TimeoutError, OSError) as e:
+                if attempt < max_retries - 1:
+                    logger.warning(
+                        f"Error deleting zone (attempt {attempt + 1}/{max_retries}): {e}"
+                    )
+                    await asyncio.sleep(retry_delay * (1.5 ** attempt))
+                    continue
+                raise ZoneError(f"Failed to delete zone '{zone_name}': {str(e)}")
+
+        raise ZoneError(f"Failed to delete zone '{zone_name}' after all retry attempts")
