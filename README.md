@@ -1,30 +1,54 @@
 # Bright Data Python SDK
 
-[![Tests](https://img.shields.io/badge/tests-365%20passing-brightgreen)](https://github.com/vzucher/brightdata-sdk-python)
+[![Tests](https://img.shields.io/badge/tests-502%2B%20passing-brightgreen)](https://github.com/vzucher/brightdata-sdk-python)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Code Quality](https://img.shields.io/badge/quality-FAANG--level-gold)](https://github.com/vzucher/brightdata-sdk-python)
+[![Code Quality](https://img.shields.io/badge/quality-enterprise--grade-gold)](https://github.com/vzucher/brightdata-sdk-python)
+[![Notebooks](https://img.shields.io/badge/jupyter-5%20notebooks-orange)](notebooks/)
 
-Modern async-first Python SDK for [Bright Data](https://brightdata.com) APIs with comprehensive platform support, hierarchical service access, and 100% type safety.
+Modern async-first Python SDK for [Bright Data](https://brightdata.com) APIs with **dataclass payloads**, **Jupyter notebooks**, comprehensive platform support, and **CLI tool** - built for data scientists and developers.
 
 ---
 
 ## ✨ Features
 
+### 🎯 **For Data Scientists**
+- 📓 **5 Jupyter Notebooks** - Complete tutorials from quickstart to batch processing
+- 🐼 **Pandas Integration** - Native DataFrame support with examples
+- 📊 **Data Analysis Ready** - Built-in visualization, export to CSV/Excel
+- 💰 **Cost Tracking** - Budget management and cost analytics
+- 🔄 **Progress Bars** - tqdm integration for batch operations
+- 💾 **Caching Support** - joblib integration for development
+
+### 🏗️ **Core Features**
 - 🚀 **Async-first architecture** with sync wrappers for compatibility
+- 🎨 **Dataclass Payloads** - Runtime validation, IDE autocomplete, helper methods
 - 🌐 **Web scraping** via Web Unlocker proxy service
 - 🔍 **SERP API** - Google, Bing, Yandex search results
 - 📦 **Platform scrapers** - LinkedIn, Amazon, ChatGPT, Facebook, Instagram
 - 🎯 **Dual namespace** - `scrape` (URL-based) + `search` (discovery)
-- 🔒 **100% type safety** - Full TypedDict definitions
-- ⚡ **Zero code duplication** - DRY principles throughout
-- ✅ **365+ comprehensive tests** - Unit, integration, and E2E
+- 🖥️ **CLI Tool** - `brightdata` command for terminal usage
+
+### 🛡️ **Enterprise Grade**
+- 🔒 **100% type safety** - Dataclasses + TypedDict definitions
+- ✅ **502+ comprehensive tests** - Unit, integration, and E2E
+- ⚡ **Resource efficient** - Single shared AsyncEngine
 - 🎨 **Rich result objects** - Timing, cost tracking, method tracking
-- 🧩 **Extensible** - Registry pattern for custom platforms
 - 🔐 **.env file support** - Automatic loading via python-dotenv
-- 🛡️ **SSL error handling** - Helpful guidance for macOS certificate issues
+- 🛡️ **SSL error handling** - Helpful guidance for certificate issues
 - 📊 **Function-level monitoring** - Track which SDK methods are used
-- 🎛️ **Centralized constants** - No magic numbers, maintainable defaults
+
+---
+
+## 📓 Jupyter Notebooks (NEW!)
+
+Perfect for data scientists! Interactive tutorials with examples:
+
+1. **[01_quickstart.ipynb](notebooks/01_quickstart.ipynb)** - Get started in 5 minutes [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vzucher/brightdata-sdk-python/blob/master/notebooks/01_quickstart.ipynb)
+2. **[02_pandas_integration.ipynb](notebooks/02_pandas_integration.ipynb)** - Work with DataFrames [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vzucher/brightdata-sdk-python/blob/master/notebooks/02_pandas_integration.ipynb)
+3. **[03_amazon_scraping.ipynb](notebooks/03_amazon_scraping.ipynb)** - Amazon deep dive [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vzucher/brightdata-sdk-python/blob/master/notebooks/03_amazon_scraping.ipynb)
+4. **[04_linkedin_jobs.ipynb](notebooks/04_linkedin_jobs.ipynb)** - Job market analysis [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vzucher/brightdata-sdk-python/blob/master/notebooks/04_linkedin_jobs.ipynb)
+5. **[05_batch_processing.ipynb](notebooks/05_batch_processing.ipynb)** - Scale to 1000s of URLs [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vzucher/brightdata-sdk-python/blob/master/notebooks/05_batch_processing.ipynb)
 
 ---
 
@@ -88,6 +112,64 @@ result = client.scrape.generic.url("https://example.com")
 print(f"Success: {result.success}")
 print(f"Data: {result.data[:200]}...")
 print(f"Time: {result.elapsed_ms():.2f}ms")
+```
+
+### Using Dataclass Payloads (Type-Safe ✨)
+
+```python
+from brightdata import BrightDataClient
+from brightdata.payloads import AmazonProductPayload, LinkedInJobSearchPayload
+
+client = BrightDataClient()
+
+# Amazon with validated payload
+payload = AmazonProductPayload(
+    url="https://amazon.com/dp/B123456789",
+    reviews_count=50  # Runtime validated!
+)
+print(f"ASIN: {payload.asin}")  # Helper property
+
+result = client.scrape.amazon.products(**payload.to_dict())
+
+# LinkedIn job search with validation
+job_payload = LinkedInJobSearchPayload(
+    keyword="python developer",
+    location="New York",
+    remote=True
+)
+print(f"Remote search: {job_payload.is_remote_search}")
+
+jobs = client.search.linkedin.jobs(**job_payload.to_dict())
+```
+
+### Pandas Integration for Data Scientists 🐼
+
+```python
+import pandas as pd
+from brightdata import BrightDataClient
+
+client = BrightDataClient()
+
+# Scrape multiple products
+urls = ["https://amazon.com/dp/B001", "https://amazon.com/dp/B002"]
+results = []
+
+for url in urls:
+    result = client.scrape.amazon.products(url=url)
+    if result.success:
+        results.append({
+            'title': result.data.get('title'),
+            'price': result.data.get('final_price'),
+            'rating': result.data.get('rating'),
+            'cost': result.cost
+        })
+
+# Convert to DataFrame
+df = pd.DataFrame(results)
+print(df.describe())
+
+# Export to CSV
+df.to_csv('products.csv', index=False)
 ```
 
 ### Platform-Specific Scraping
@@ -316,33 +398,39 @@ asyncio.run(scrape_multiple())
 
 ---
 
-## 🆕 What's New in v17.11.25
+## 🆕 What's New in v26.11.24
 
-**Major refactoring and new features from [PR #6](https://github.com/vzucher/brightdata-python-sdk/pull/6):**
+### 🎓 **For Data Scientists**
+- ✅ **5 Jupyter Notebooks** - Complete interactive tutorials
+- ✅ **Pandas Integration** - Native DataFrame support with examples
+- ✅ **Batch Processing Guide** - Scale to 1000s of URLs with progress bars
+- ✅ **Cost Management** - Budget tracking and optimization
+- ✅ **Visualization Examples** - matplotlib/seaborn integration
 
-### New Platforms
+### 🎨 **Dataclass Payloads (Major Upgrade)**
+- ✅ **Runtime Validation** - Catch errors at instantiation time
+- ✅ **Helper Properties** - `.asin`, `.is_remote_search`, `.domain`, etc.
+- ✅ **IDE Autocomplete** - Full IntelliSense support
+- ✅ **Default Values** - Smart defaults (e.g., `country="US"`)
+- ✅ **to_dict() Method** - Easy API conversion
+- ✅ **Consistent Model** - Same pattern as result models
+
+### 🖥️ **CLI Tool**
+- ✅ **`brightdata` command** - Use SDK from terminal
+- ✅ **Scrape operations** - `brightdata scrape amazon products --url ...`
+- ✅ **Search operations** - `brightdata search linkedin jobs --keyword ...`
+- ✅ **Output formats** - JSON, pretty-print, minimal
+
+### 🏗️ **Architecture Improvements**
+- ✅ **Single AsyncEngine** - Shared across all scrapers (8x efficiency)
+- ✅ **Resource Optimization** - Reduced memory footprint
+- ✅ **Enhanced Error Messages** - Clear, actionable error messages
+- ✅ **502+ Tests** - Comprehensive test coverage
+
+### 🆕 **New Platforms**
 - ✅ **Facebook Scraper** - Posts (profile/group/URL), Comments, Reels
 - ✅ **Instagram Scraper** - Profiles, Posts, Comments, Reels
 - ✅ **Instagram Search** - Posts and Reels discovery with filters
-
-### Architecture Improvements
-- ✅ **Centralized Constants** - All magic numbers in `constants.py`
-- ✅ **Service Class Separation** - Clean separation: Scrape, Search, Crawler, WebUnlocker
-- ✅ **Method Field Tracking** - Track "web_scraper", "web_unlocker", or "browser_api"
-- ✅ **Function-Level Monitoring** - Automatic `sdk_function` parameter for analytics
-- ✅ **Better LinkedIn Structure** - Separated scraper from search operations
-
-### Developer Experience
-- ✅ **.env File Support** - Automatic loading via python-dotenv
-- ✅ **Multiple Environment Variables** - `BRIGHTDATA_API_TOKEN`, `BRIGHTDATA_CUSTOMER_ID`
-- ✅ **SSL Error Handling** - Platform-specific guidance for macOS certificate issues
-- ✅ **Consistent Async/Sync Pattern** - Standard pattern across all scrapers
-
-### Code Quality
-- ✅ **Zero Magic Numbers** - All constants centralized
-- ✅ **Reduced Code Duplication** - Base scraper handles common patterns
-- ✅ **Better Error Messages** - Helpful SSL and validation errors
-- ✅ **Improved Type Safety** - Additional TypedDict definitions
 
 ---
 
@@ -500,6 +588,186 @@ result.get_timing_breakdown()    # Detailed timing dict
 result.to_dict()                 # Convert to dictionary
 result.to_json(indent=2)         # JSON string
 result.save_to_file("result.json")  # Save to file
+```
+
+---
+
+## 🖥️ CLI Usage
+
+The SDK includes a powerful CLI tool:
+
+```bash
+# Help
+brightdata --help
+
+# Scrape Amazon product
+brightdata scrape amazon products \
+  --url "https://amazon.com/dp/B0CRMZHDG8" \
+  --output-format json
+
+# Search LinkedIn jobs
+brightdata search linkedin jobs \
+  --keyword "python developer" \
+  --location "New York" \
+  --remote \
+  --output-file jobs.json
+
+# Search Google
+brightdata search google \
+  --query "python tutorial" \
+  --location "United States"
+
+# Generic web scraping
+brightdata scrape generic \
+  --url "https://example.com" \
+  --output-format pretty
+```
+
+### Available Commands
+
+**Scrape Operations:**
+- `brightdata scrape amazon products/reviews/sellers`
+- `brightdata scrape linkedin profiles/jobs/companies/posts`
+- `brightdata scrape facebook posts-profile/posts-group/comments/reels`
+- `brightdata scrape instagram profiles/posts/comments/reels`
+- `brightdata scrape chatgpt prompt`
+- `brightdata scrape generic url`
+
+**Search Operations:**
+- `brightdata search linkedin jobs/profiles/posts`
+- `brightdata search instagram posts/reels`
+- `brightdata search google/bing/yandex`
+- `brightdata search chatgpt`
+
+---
+
+## 🐼 Pandas Integration
+
+Perfect for data analysis workflows:
+
+```python
+import pandas as pd
+from tqdm import tqdm
+from brightdata import BrightDataClient
+from brightdata.payloads import AmazonProductPayload
+
+client = BrightDataClient()
+
+# Batch scrape with progress bar
+urls = ["https://amazon.com/dp/B001", "https://amazon.com/dp/B002"]
+results = []
+
+for url in tqdm(urls, desc="Scraping"):
+    payload = AmazonProductPayload(url=url)
+    result = client.scrape.amazon.products(**payload.to_dict())
+    
+    if result.success:
+        results.append({
+            'asin': payload.asin,
+            'title': result.data.get('title'),
+            'price': result.data.get('final_price'),
+            'rating': result.data.get('rating'),
+            'cost': result.cost,
+            'elapsed_ms': result.elapsed_ms()
+        })
+
+# Create DataFrame
+df = pd.DataFrame(results)
+
+# Analysis
+print(df.describe())
+print(f"Total cost: ${df['cost'].sum():.4f}")
+print(f"Avg rating: {df['rating'].mean():.2f}")
+
+# Export
+df.to_csv('amazon_products.csv', index=False)
+df.to_excel('amazon_products.xlsx', index=False)
+
+# Visualization
+import matplotlib.pyplot as plt
+df.plot(x='asin', y='rating', kind='bar', title='Product Ratings')
+plt.show()
+```
+
+See **[notebooks/02_pandas_integration.ipynb](notebooks/02_pandas_integration.ipynb)** for complete examples.
+
+---
+
+## 🎨 Dataclass Payloads
+
+All payloads are now dataclasses with runtime validation:
+
+### Amazon Payloads
+
+```python
+from brightdata.payloads import AmazonProductPayload, AmazonReviewPayload
+
+# Product with validation
+payload = AmazonProductPayload(
+    url="https://amazon.com/dp/B123456789",
+    reviews_count=50,
+    images_count=10
+)
+
+# Helper properties
+print(payload.asin)        # "B123456789"
+print(payload.domain)      # "amazon.com"
+print(payload.is_secure)   # True
+
+# Convert to API dict
+api_dict = payload.to_dict()  # Excludes None values
+```
+
+### LinkedIn Payloads
+
+```python
+from brightdata.payloads import LinkedInJobSearchPayload
+
+payload = LinkedInJobSearchPayload(
+    keyword="python developer",
+    location="San Francisco",
+    remote=True,
+    experienceLevel="mid"
+)
+
+# Helper properties
+print(payload.is_remote_search)  # True
+
+# Use with client
+result = client.search.linkedin.jobs(**payload.to_dict())
+```
+
+### ChatGPT Payloads
+
+```python
+from brightdata.payloads import ChatGPTPromptPayload
+
+payload = ChatGPTPromptPayload(
+    prompt="Explain async programming",
+    web_search=True
+)
+
+# Default values
+print(payload.country)  # "US" (default)
+print(payload.uses_web_search)  # True
+```
+
+### Validation Examples
+
+```python
+# Runtime validation catches errors early
+try:
+    AmazonProductPayload(url="invalid-url")
+except ValueError as e:
+    print(e)  # "url must be valid HTTP/HTTPS URL"
+
+try:
+    AmazonProductPayload(
+        url="https://amazon.com/dp/B123",
+        reviews_count=-1
+    )
+except ValueError as e:
+    print(e)  # "reviews_count must be non-negative"
 ```
 
 ---
@@ -680,11 +948,25 @@ pytest tests/ --cov=brightdata --cov-report=html
 
 ## 📖 Documentation
 
+### Jupyter Notebooks (Interactive)
+- [01_quickstart.ipynb](notebooks/01_quickstart.ipynb) - 5-minute getting started
+- [02_pandas_integration.ipynb](notebooks/02_pandas_integration.ipynb) - DataFrame workflows
+- [03_amazon_scraping.ipynb](notebooks/03_amazon_scraping.ipynb) - Amazon deep dive
+- [04_linkedin_jobs.ipynb](notebooks/04_linkedin_jobs.ipynb) - Job market analysis
+- [05_batch_processing.ipynb](notebooks/05_batch_processing.ipynb) - Scale to production
+
+### Code Examples
+- [examples/10_pandas_integration.py](examples/10_pandas_integration.py) - Pandas integration
+- [examples/01_simple_scrape.py](examples/01_simple_scrape.py) - Basic usage
+- [examples/03_batch_scraping.py](examples/03_batch_scraping.py) - Batch operations
+- [examples/04_specialized_scrapers.py](examples/04_specialized_scrapers.py) - Platform-specific
+- [All examples →](examples/)
+
+### Documentation
 - [Quick Start Guide](docs/quickstart.md)
 - [Architecture Overview](docs/architecture.md)
 - [API Reference](docs/api-reference/)
 - [Contributing Guide](docs/contributing.md)
-- [Implementation Plan](PLAN.md) - Original refactoring plan
 
 ---
 
@@ -765,15 +1047,17 @@ pytest tests/
 
 ## 📊 Project Stats
 
-- **Production Code:** ~7,500 lines
-- **Test Code:** ~3,500 lines
-- **Test Coverage:** 100% (365+ tests passing)
+- **Production Code:** ~9,000 lines
+- **Test Code:** ~4,000 lines
+- **Documentation:** 5 Jupyter notebooks + 10 examples
+- **Test Coverage:** 502+ tests passing (Unit, Integration, E2E)
 - **Supported Platforms:** Amazon, LinkedIn, ChatGPT, Facebook, Instagram, Generic Web
 - **Supported Search Engines:** Google, Bing, Yandex
-- **Type Safety:** 100% (TypedDict everywhere)
-- **Code Duplication:** 0%
-- **Centralized Constants:** Yes (no magic numbers)
-- **SSL Error Handling:** Platform-specific guidance included
+- **Type Safety:** 100% (Dataclasses + TypedDict)
+- **Resource Efficiency:** Single shared AsyncEngine
+- **Data Science Ready:** Pandas, tqdm, joblib integration
+- **CLI Tool:** Full-featured command-line interface
+- **Code Quality:** Enterprise-grade, FAANG standards
 
 ---
 
@@ -872,19 +1156,31 @@ python demo_sdk.py
 
 ## 🎯 Roadmap
 
+### ✅ Completed
 - [x] Core client with authentication
 - [x] Web Unlocker service
 - [x] Platform scrapers (Amazon, LinkedIn, ChatGPT, Facebook, Instagram)
 - [x] SERP API (Google, Bing, Yandex)
-- [x] Comprehensive test suite
+- [x] Comprehensive test suite (502+ tests)
 - [x] .env file support via python-dotenv
 - [x] SSL error handling with helpful guidance
 - [x] Centralized constants module
-- [x] Function-level monitoring (sdk_function parameter)
-- [x] Method tracking (web_scraper, web_unlocker, browser_api)
+- [x] Function-level monitoring
+- [x] **Dataclass payloads with validation**
+- [x] **Jupyter notebooks for data scientists**
+- [x] **CLI tool (brightdata command)**
+- [x] **Pandas integration examples**
+- [x] **Single shared AsyncEngine (8x efficiency)**
+
+### 🚧 In Progress
 - [ ] Browser automation API
 - [ ] Web crawler API
+
+### 🔮 Future
 - [ ] Additional platforms (Reddit, Twitter/X, TikTok, YouTube)
+- [ ] Real-time data streaming
+- [ ] Advanced caching strategies
+- [ ] Prometheus metrics export
 
 ---
 
@@ -893,10 +1189,27 @@ python demo_sdk.py
 Built with best practices from:
 - Modern Python packaging (PEP 518, 621)
 - Async/await patterns
-- Type safety (PEP 484, 544)
-- FAANG-level engineering standards
+- Type safety (PEP 484, 544, dataclasses)
+- Enterprise-grade engineering standards
+- Data science workflows (pandas, jupyter)
+
+### Built For
+- 🎓 **Data Scientists** - Jupyter notebooks, pandas integration, visualization examples
+- 👨‍💻 **Developers** - Type-safe API, comprehensive docs, CLI tool
+- 🏢 **Enterprises** - Production-ready, well-tested, resource-efficient
 
 ---
 
-**Ready to start scraping?** Get your API token at [brightdata.com](https://brightdata.com/cp/api_keys) and dive in!
+## 🌟 Why Choose This SDK?
+
+- ✅ **Data Scientist Friendly** - 5 Jupyter notebooks, pandas examples, visualization guides
+- ✅ **Type Safe** - Dataclass payloads with runtime validation
+- ✅ **Enterprise Ready** - 502+ tests, resource efficient, production-proven
+- ✅ **Well Documented** - Interactive notebooks + code examples + API docs
+- ✅ **Easy to Use** - CLI tool, intuitive API, helpful error messages
+- ✅ **Actively Maintained** - Regular updates, bug fixes, new features
+
+---
+
+**Ready to start scraping?** Get your API token at [brightdata.com](https://brightdata.com/cp/api_keys) and try our [quickstart notebook](notebooks/01_quickstart.ipynb)!
 
