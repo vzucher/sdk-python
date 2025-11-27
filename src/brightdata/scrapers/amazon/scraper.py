@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 
 from ..base import BaseWebScraper
 from ..registry import register
+from ..job import ScrapeJob
 from ...models import ScrapeResult
 from ...utils.validation import validate_url, validate_url_list
 from ...utils.function_detection import get_caller_function_name
@@ -109,6 +110,87 @@ class AmazonScraper(BaseWebScraper):
         return asyncio.run(self.products_async(url, timeout=timeout))
     
     # ============================================================================
+    # PRODUCTS TRIGGER/STATUS/FETCH (Manual Control)
+    # ============================================================================
+    
+    async def products_trigger_async(
+        self,
+        url: Union[str, List[str]],
+    ) -> ScrapeJob:
+        """
+        Trigger Amazon products scrape (async - manual control).
+        
+        Starts a scrape operation and returns immediately with a Job object.
+        Use the Job to check status and fetch results when ready.
+        
+        Args:
+            url: Single product URL or list of product URLs
+        
+        Returns:
+            ScrapeJob object for status checking and result fetching
+        
+        Example:
+            >>> # Trigger and manual control
+            >>> job = await scraper.products_trigger_async("https://amazon.com/dp/B123")
+            >>> print(f"Job ID: {job.snapshot_id}")
+            >>> 
+            >>> # Check status later
+            >>> status = await job.status_async()
+            >>> if status == "ready":
+            ...     data = await job.fetch_async()
+        """
+        sdk_function = get_caller_function_name()
+        return await self._trigger_scrape_async(
+            urls=url,
+            sdk_function=sdk_function or "products_trigger"
+        )
+    
+    def products_trigger(
+        self,
+        url: Union[str, List[str]],
+    ) -> ScrapeJob:
+        """Trigger Amazon products scrape (sync wrapper)."""
+        return asyncio.run(self.products_trigger_async(url))
+    
+    async def products_status_async(self, snapshot_id: str) -> str:
+        """
+        Check Amazon products scrape status (async).
+        
+        Args:
+            snapshot_id: Snapshot ID from trigger operation
+        
+        Returns:
+            Status string: "ready", "in_progress", "error"
+        
+        Example:
+            >>> status = await scraper.products_status_async(snapshot_id)
+        """
+        return await self._check_status_async(snapshot_id)
+    
+    def products_status(self, snapshot_id: str) -> str:
+        """Check Amazon products scrape status (sync wrapper)."""
+        return asyncio.run(self.products_status_async(snapshot_id))
+    
+    async def products_fetch_async(self, snapshot_id: str) -> Any:
+        """
+        Fetch Amazon products scrape results (async).
+        
+        Args:
+            snapshot_id: Snapshot ID from trigger operation
+        
+        Returns:
+            Product data
+        
+        Example:
+            >>> data = await scraper.products_fetch_async(snapshot_id)
+        """
+        return await self._fetch_results_async(snapshot_id)
+    
+    def products_fetch(self, snapshot_id: str) -> Any:
+        """Fetch Amazon products scrape results (sync wrapper)."""
+        return asyncio.run(self.products_fetch_async(snapshot_id))
+    
+    # ============================================================================
     # REVIEWS EXTRACTION (URL-based with filters)
     # ============================================================================
     
@@ -201,6 +283,69 @@ class AmazonScraper(BaseWebScraper):
         return asyncio.run(self.reviews_async(url, pastDays, keyWord, numOfReviews, timeout))
     
     # ============================================================================
+    # REVIEWS TRIGGER/STATUS/FETCH (Manual Control)
+    # ============================================================================
+    
+    async def reviews_trigger_async(
+        self,
+        url: Union[str, List[str]],
+        pastDays: Optional[int] = None,
+        keyWord: Optional[str] = None,
+        numOfReviews: Optional[int] = None,
+    ) -> ScrapeJob:
+        """
+        Trigger Amazon reviews scrape (async - manual control).
+        
+        Starts a scrape operation and returns immediately with a Job object.
+        
+        Args:
+            url: Single product URL or list of product URLs
+            pastDays: Number of past days to consider reviews from (optional)
+            keyWord: Filter reviews by keyword (optional)
+            numOfReviews: Number of reviews to scrape (optional)
+        
+        Returns:
+            ScrapeJob object for status checking and result fetching
+        
+        Example:
+            >>> job = await scraper.reviews_trigger_async("https://amazon.com/dp/B123", pastDays=30)
+            >>> status = await job.status_async()
+            >>> data = await job.fetch_async()
+        """
+        sdk_function = get_caller_function_name()
+        return await self._trigger_scrape_async(
+            urls=url,
+            dataset_id=self.DATASET_ID_REVIEWS,
+            sdk_function=sdk_function or "reviews_trigger"
+        )
+    
+    def reviews_trigger(
+        self,
+        url: Union[str, List[str]],
+        pastDays: Optional[int] = None,
+        keyWord: Optional[str] = None,
+        numOfReviews: Optional[int] = None,
+    ) -> ScrapeJob:
+        """Trigger Amazon reviews scrape (sync wrapper)."""
+        return asyncio.run(self.reviews_trigger_async(url, pastDays, keyWord, numOfReviews))
+    
+    async def reviews_status_async(self, snapshot_id: str) -> str:
+        """Check Amazon reviews scrape status (async)."""
+        return await self._check_status_async(snapshot_id)
+    
+    def reviews_status(self, snapshot_id: str) -> str:
+        """Check Amazon reviews scrape status (sync wrapper)."""
+        return asyncio.run(self.reviews_status_async(snapshot_id))
+    
+    async def reviews_fetch_async(self, snapshot_id: str) -> Any:
+        """Fetch Amazon reviews scrape results (async)."""
+        return await self._fetch_results_async(snapshot_id)
+    
+    def reviews_fetch(self, snapshot_id: str) -> Any:
+        """Fetch Amazon reviews scrape results (sync wrapper)."""
+        return asyncio.run(self.reviews_fetch_async(snapshot_id))
+    
+    # ============================================================================
     # SELLERS EXTRACTION (URL-based)
     # ============================================================================
     
@@ -250,6 +395,60 @@ class AmazonScraper(BaseWebScraper):
         See sellers_async() for documentation.
         """
         return asyncio.run(self.sellers_async(url, timeout))
+    
+    # ============================================================================
+    # SELLERS TRIGGER/STATUS/FETCH (Manual Control)
+    # ============================================================================
+    
+    async def sellers_trigger_async(
+        self,
+        url: Union[str, List[str]],
+    ) -> ScrapeJob:
+        """
+        Trigger Amazon sellers scrape (async - manual control).
+        
+        Starts a scrape operation and returns immediately with a Job object.
+        
+        Args:
+            url: Single seller URL or list of seller URLs
+        
+        Returns:
+            ScrapeJob object for status checking and result fetching
+        
+        Example:
+            >>> job = await scraper.sellers_trigger_async("https://amazon.com/sp?seller=AXXX")
+            >>> await job.wait_async()
+            >>> data = await job.fetch_async()
+        """
+        sdk_function = get_caller_function_name()
+        return await self._trigger_scrape_async(
+            urls=url,
+            dataset_id=self.DATASET_ID_SELLERS,
+            sdk_function=sdk_function or "sellers_trigger"
+        )
+    
+    def sellers_trigger(
+        self,
+        url: Union[str, List[str]],
+    ) -> ScrapeJob:
+        """Trigger Amazon sellers scrape (sync wrapper)."""
+        return asyncio.run(self.sellers_trigger_async(url))
+    
+    async def sellers_status_async(self, snapshot_id: str) -> str:
+        """Check Amazon sellers scrape status (async)."""
+        return await self._check_status_async(snapshot_id)
+    
+    def sellers_status(self, snapshot_id: str) -> str:
+        """Check Amazon sellers scrape status (sync wrapper)."""
+        return asyncio.run(self.sellers_status_async(snapshot_id))
+    
+    async def sellers_fetch_async(self, snapshot_id: str) -> Any:
+        """Fetch Amazon sellers scrape results (async)."""
+        return await self._fetch_results_async(snapshot_id)
+    
+    def sellers_fetch(self, snapshot_id: str) -> Any:
+        """Fetch Amazon sellers scrape results (sync wrapper)."""
+        return asyncio.run(self.sellers_fetch_async(snapshot_id))
     
     # ============================================================================
     # CORE SCRAPING LOGIC (Standard async workflow)

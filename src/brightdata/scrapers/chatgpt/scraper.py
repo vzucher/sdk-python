@@ -123,6 +123,75 @@ class ChatGPTScraper(BaseWebScraper):
         """
         return asyncio.run(self.prompt_async(prompt, **kwargs))
     
+    # ============================================================================
+    # PROMPT TRIGGER/STATUS/FETCH (Manual Control)
+    # ============================================================================
+    
+    async def prompt_trigger_async(
+        self,
+        prompt: str,
+        country: str = "us",
+        web_search: bool = False,
+        additional_prompt: Optional[str] = None,
+    ) -> "ScrapeJob":
+        """Trigger ChatGPT prompt (async - manual control)."""
+        from ..job import ScrapeJob
+        
+        if not prompt or not isinstance(prompt, str):
+            raise ValidationError("Prompt must be a non-empty string")
+        
+        # Build payload
+        payload = [{
+            "url": "https://chatgpt.com/",
+            "prompt": prompt,
+            "country": country.upper(),
+            "web_search": web_search,
+        }]
+        
+        if additional_prompt:
+            payload[0]["additional_prompt"] = additional_prompt
+        
+        # Trigger the scrape
+        snapshot_id = await self.api_client.trigger(
+            payload=payload,
+            dataset_id=self.DATASET_ID
+        )
+        
+        sdk_function = get_caller_function_name()
+        
+        return ScrapeJob(
+            snapshot_id=snapshot_id,
+            scraper=self,
+            dataset_id=self.DATASET_ID,
+            sdk_function=sdk_function or "prompt_trigger"
+        )
+    
+    def prompt_trigger(
+        self,
+        prompt: str,
+        country: str = "us",
+        web_search: bool = False,
+        additional_prompt: Optional[str] = None,
+    ) -> "ScrapeJob":
+        """Trigger ChatGPT prompt (sync wrapper)."""
+        return asyncio.run(self.prompt_trigger_async(prompt, country, web_search, additional_prompt))
+    
+    async def prompt_status_async(self, snapshot_id: str) -> str:
+        """Check ChatGPT prompt status (async)."""
+        return await self._check_status_async(snapshot_id)
+    
+    def prompt_status(self, snapshot_id: str) -> str:
+        """Check ChatGPT prompt status (sync wrapper)."""
+        return asyncio.run(self.prompt_status_async(snapshot_id))
+    
+    async def prompt_fetch_async(self, snapshot_id: str) -> Any:
+        """Fetch ChatGPT prompt results (async)."""
+        return await self._fetch_results_async(snapshot_id)
+    
+    def prompt_fetch(self, snapshot_id: str) -> Any:
+        """Fetch ChatGPT prompt results (sync wrapper)."""
+        return asyncio.run(self.prompt_fetch_async(snapshot_id))
+    
     async def prompts_async(
         self,
         prompts: List[str],
@@ -201,6 +270,77 @@ class ChatGPTScraper(BaseWebScraper):
         See prompts_async() for full documentation.
         """
         return asyncio.run(self.prompts_async(prompts, **kwargs))
+    
+    # ============================================================================
+    # PROMPTS TRIGGER/STATUS/FETCH (Manual Control for batch)
+    # ============================================================================
+    
+    async def prompts_trigger_async(
+        self,
+        prompts: List[str],
+        countries: Optional[List[str]] = None,
+        web_searches: Optional[List[bool]] = None,
+        additional_prompts: Optional[List[str]] = None,
+    ) -> "ScrapeJob":
+        """Trigger ChatGPT batch prompts (async - manual control)."""
+        from ..job import ScrapeJob
+        
+        if not prompts or not isinstance(prompts, list):
+            raise ValidationError("Prompts must be a non-empty list")
+        
+        # Build batch payload
+        payload = []
+        for i, prompt in enumerate(prompts):
+            item = {
+                "url": "https://chatgpt.com/",
+                "prompt": prompt,
+                "country": (countries[i] if countries and i < len(countries) else "US").upper(),
+                "web_search": web_searches[i] if web_searches and i < len(web_searches) else False,
+            }
+            if additional_prompts and i < len(additional_prompts):
+                item["additional_prompt"] = additional_prompts[i]
+            payload.append(item)
+        
+        # Trigger the scrape
+        snapshot_id = await self.api_client.trigger(
+            payload=payload,
+            dataset_id=self.DATASET_ID
+        )
+        
+        sdk_function = get_caller_function_name()
+        
+        return ScrapeJob(
+            snapshot_id=snapshot_id,
+            scraper=self,
+            dataset_id=self.DATASET_ID,
+            sdk_function=sdk_function or "prompts_trigger"
+        )
+    
+    def prompts_trigger(
+        self,
+        prompts: List[str],
+        countries: Optional[List[str]] = None,
+        web_searches: Optional[List[bool]] = None,
+        additional_prompts: Optional[List[str]] = None,
+    ) -> "ScrapeJob":
+        """Trigger ChatGPT batch prompts (sync wrapper)."""
+        return asyncio.run(self.prompts_trigger_async(prompts, countries, web_searches, additional_prompts))
+    
+    async def prompts_status_async(self, snapshot_id: str) -> str:
+        """Check ChatGPT batch prompts status (async)."""
+        return await self._check_status_async(snapshot_id)
+    
+    def prompts_status(self, snapshot_id: str) -> str:
+        """Check ChatGPT batch prompts status (sync wrapper)."""
+        return asyncio.run(self.prompts_status_async(snapshot_id))
+    
+    async def prompts_fetch_async(self, snapshot_id: str) -> Any:
+        """Fetch ChatGPT batch prompts results (async)."""
+        return await self._fetch_results_async(snapshot_id)
+    
+    def prompts_fetch(self, snapshot_id: str) -> Any:
+        """Fetch ChatGPT batch prompts results (sync wrapper)."""
+        return asyncio.run(self.prompts_fetch_async(snapshot_id))
     
     # ============================================================================
     # SCRAPE OVERRIDE (ChatGPT doesn't use URL-based scraping)

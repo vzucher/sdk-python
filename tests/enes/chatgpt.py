@@ -45,13 +45,18 @@ async def test_chatgpt_single_prompt():
 
                 if result.data:
                     print(f"\n✅ Got ChatGPT response:")
-                    if isinstance(result.data, dict):
-                        print(f"   - Response: {result.data.get('response', 'N/A')[:200]}...")
-                        print(f"   - Prompt: {result.data.get('prompt', 'N/A')}")
+                    if isinstance(result.data, list) and len(result.data) > 0:
+                        response = result.data[0]
+                        print(f"   - Answer: {response.get('answer_text', 'N/A')[:200]}...")
+                        print(f"   - Model: {response.get('model', 'N/A')}")
+                        print(f"   - Country: {response.get('country', 'N/A')}")
+                    elif isinstance(result.data, dict):
+                        print(f"   - Answer: {result.data.get('answer_text', 'N/A')[:200]}...")
+                        print(f"   - Model: {result.data.get('model', 'N/A')}")
                     elif isinstance(result.data, str):
                         print(f"   - Response: {result.data[:200]}...")
                     else:
-                        print(f"   Data: {result.data}")
+                        print(f"   Unexpected data type: {type(result.data)}")
                 else:
                     print(f"\n❌ No response data returned")
 
@@ -93,13 +98,18 @@ async def test_chatgpt_web_search():
 
                 if result.data:
                     print(f"\n✅ Got ChatGPT response with web search:")
-                    if isinstance(result.data, dict):
-                        print(f"   - Response: {result.data.get('response', 'N/A')[:200]}...")
-                        print(f"   - Web search used: {result.data.get('web_search', False)}")
+                    if isinstance(result.data, list) and len(result.data) > 0:
+                        response = result.data[0]
+                        print(f"   - Answer: {response.get('answer_text', 'N/A')[:200]}...")
+                        print(f"   - Model: {response.get('model', 'N/A')}")
+                        print(f"   - Web search triggered: {response.get('web_search_triggered', False)}")
+                    elif isinstance(result.data, dict):
+                        print(f"   - Answer: {result.data.get('answer_text', 'N/A')[:200]}...")
+                        print(f"   - Web search triggered: {result.data.get('web_search_triggered', False)}")
                     elif isinstance(result.data, str):
                         print(f"   - Response: {result.data[:200]}...")
                     else:
-                        print(f"   Data: {result.data}")
+                        print(f"   Unexpected data type: {type(result.data)}")
                 else:
                     print(f"\n❌ No response data returned")
 
@@ -147,12 +157,13 @@ async def test_chatgpt_multiple_prompts():
                         for i, response in enumerate(result.data, 1):
                             print(f"\n   Response {i}:")
                             if isinstance(response, dict):
-                                print(f"   - Prompt: {response.get('prompt', 'N/A')}")
-                                print(f"   - Response: {response.get('response', 'N/A')[:100]}...")
+                                print(f"   - Prompt: {response.get('input', {}).get('prompt', 'N/A')}")
+                                print(f"   - Answer: {response.get('answer_text', 'N/A')[:150]}...")
+                                print(f"   - Model: {response.get('model', 'N/A')}")
                             else:
                                 print(f"   - Response: {str(response)[:100]}...")
                     else:
-                        print(f"   Data: {result.data}")
+                        print(f"   Unexpected data type: {type(result.data)}")
                 else:
                     print(f"\n❌ No responses returned")
 

@@ -14,6 +14,9 @@ from .models import (
     Result,
 )
 
+# Export job model for manual trigger/poll/fetch
+from .scrapers.job import ScrapeJob
+
 # Export payload models (dataclasses)
 from .payloads import (
     # Base
@@ -75,6 +78,8 @@ __all__ = [
     "SearchResult",
     "CrawlResult",
     "Result",
+    # Job model for manual control
+    "ScrapeJob",
     # Payload models (dataclasses)
     "BasePayload",
     "URLPayload",

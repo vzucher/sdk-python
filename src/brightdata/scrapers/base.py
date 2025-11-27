@@ -27,6 +27,7 @@ from ..constants import (
 )
 from .api_client import DatasetAPIClient
 from .workflow import WorkflowExecutor
+from .job import ScrapeJob
 
 
 class BaseWebScraper(ABC):
@@ -226,6 +227,121 @@ class BaseWebScraper(ABC):
             >>> [{"url": "https://amazon.com/dp/B123", "reviews_count": 100}]
         """
         return [{"url": url} for url in urls]
+    
+    
+    # ============================================================================
+    # TRIGGER/STATUS/FETCH INTERFACE (Manual Control)
+    # ============================================================================
+    
+    async def _trigger_scrape_async(
+        self,
+        urls: Union[str, List[str]],
+        sdk_function: Optional[str] = None,
+        **kwargs
+    ) -> ScrapeJob:
+        """
+        Trigger scrape job (internal async method).
+        
+        Starts a scrape operation and returns a Job object for status checking and result fetching.
+        This is the internal implementation - platform scrapers should expose their own
+        typed trigger methods (e.g., products_trigger_async, profiles_trigger_async).
+        
+        Args:
+            urls: URL or list of URLs to scrape
+            sdk_function: SDK function name for monitoring
+            **kwargs: Additional platform-specific parameters
+        
+        Returns:
+            ScrapeJob object with snapshot_id
+        
+        Example:
+            >>> job = await scraper._trigger_scrape_async("https://example.com")
+            >>> print(f"Job ID: {job.snapshot_id}")
+        """
+        # Validate and normalize URLs
+        if isinstance(urls, str):
+            validate_url(urls)
+            url_list = [urls]
+        else:
+            validate_url_list(urls)
+            url_list = urls
+        
+        # Build payload
+        payload = self._build_scrape_payload(url_list, **kwargs)
+        
+        # Trigger via API
+        snapshot_id = await self.api_client.trigger(
+            payload=payload,
+            dataset_id=self.DATASET_ID,
+            include_errors=True,
+            sdk_function=sdk_function,
+        )
+        
+        if not snapshot_id:
+            raise APIError("Failed to trigger scrape - no snapshot_id returned")
+        
+        # Return Job object
+        return ScrapeJob(
+            snapshot_id=snapshot_id,
+            api_client=self.api_client,
+            platform_name=self.PLATFORM_NAME,
+            cost_per_record=self.COST_PER_RECORD,
+        )
+    
+    def _trigger_scrape(
+        self,
+        urls: Union[str, List[str]],
+        sdk_function: Optional[str] = None,
+        **kwargs
+    ) -> ScrapeJob:
+        """Trigger scrape job (internal sync wrapper)."""
+        return _run_blocking(
+            self._trigger_scrape_async(urls, sdk_function=sdk_function, **kwargs)
+        )
+    
+    async def _check_status_async(self, snapshot_id: str) -> str:
+        """
+        Check scrape job status (internal async method).
+        
+        Args:
+            snapshot_id: Snapshot identifier from trigger operation
+        
+        Returns:
+            Status string: "ready", "in_progress", "error", etc.
+        
+        Example:
+            >>> status = await scraper._check_status_async(snapshot_id)
+            >>> print(f"Status: {status}")
+        """
+        return await self.api_client.get_status(snapshot_id)
+    
+    def _check_status(self, snapshot_id: str) -> str:
+        """Check scrape job status (internal sync wrapper)."""
+        return _run_blocking(self._check_status_async(snapshot_id))
+    
+    async def _fetch_results_async(
+        self,
+        snapshot_id: str,
+        format: str = "json"
+    ) -> Any:
+        """
+        Fetch scrape job results (internal async method).
+        
+        Args:
+            snapshot_id: Snapshot identifier from trigger operation
+            format: Result format ("json" or "raw")
+        
+        Returns:
+            Scraped data
+        
+        Example:
+            >>> data = await scraper._fetch_results_async(snapshot_id)
+        """
+        return await self.api_client.fetch_result(snapshot_id, format=format)
+    
+    def _fetch_results(self, snapshot_id: str, format: str = "json") -> Any:
+        """Fetch scrape job results (internal sync wrapper)."""
+        return _run_blocking(self._fetch_results_async(snapshot_id, format=format))
     
     
     def __repr__(self) -> str:
