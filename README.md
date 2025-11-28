@@ -106,12 +106,15 @@ from brightdata import BrightDataClient
 # Initialize client (auto-loads token from environment)
 client = BrightDataClient()
 
-# Scrape any website
+# Scrape any website (sync wrapper)
 result = client.scrape.generic.url("https://example.com")
 
-print(f"Success: {result.success}")
-print(f"Data: {result.data[:200]}...")
-print(f"Time: {result.elapsed_ms():.2f}ms")
+if result.success:
+    print(f"Success: {result.success}")
+    print(f"Data: {result.data[:200]}...")
+    print(f"Time: {result.elapsed_ms():.2f}ms")
+else:
+    print(f"Error: {result.error}")
 ```
 
 ### Using Dataclass Payloads (Type-Safe ✨)
@@ -180,7 +183,6 @@ df.to_csv('products.csv', index=False)
 # Scrape specific product URLs
 result = client.scrape.amazon.products(
     url="https://amazon.com/dp/B0CRMZHDG8",
-    sync=True,
     timeout=65
 )
 
@@ -203,8 +205,7 @@ result = client.scrape.amazon.sellers(
 ```python
 # URL-based extraction
 result = client.scrape.linkedin.profiles(
-    url="https://linkedin.com/in/johndoe",
-    sync=True
+    url="https://linkedin.com/in/johndoe"
 )
 
 result = client.scrape.linkedin.jobs(
@@ -242,18 +243,17 @@ result = client.search.linkedin.posts(
 #### ChatGPT Interactions
 
 ```python
-# Send prompts to ChatGPT
-result = client.search.chatGPT(
+# Send single prompt to ChatGPT
+result = client.scrape.chatgpt.prompt(
     prompt="Explain Python async programming",
     country="us",
-    webSearch=True,
-    sync=True
+    web_search=True
 )
 
 # Batch prompts
-result = client.search.chatGPT(
-    prompt=["What is Python?", "What is JavaScript?", "Compare them"],
-    webSearch=[False, False, True]
+result = client.scrape.chatgpt.prompts(
+    prompts=["What is Python?", "What is JavaScript?", "Compare them"],
+    web_searches=[False, False, True]
 )
 ```
 
@@ -377,11 +377,14 @@ result = client.search.yandex(
 
 ### Async Usage
 
+For better performance with multiple operations, use async:
+
 ```python
 import asyncio
 from brightdata import BrightDataClient
 
 async def scrape_multiple():
+    # Use async context manager for engine lifecycle
     async with BrightDataClient() as client:
         # Scrape multiple URLs concurrently
         results = await client.scrape.generic.url_async([
@@ -391,10 +394,12 @@ async def scrape_multiple():
         ])
         
         for result in results:
-            print(f"{result.url}: {result.success}")
+            print(f"Success: {result.success}")
 
 asyncio.run(scrape_multiple())
 ```
+
+**Important:** When using `*_async` methods, always use the async context manager (`async with BrightDataClient() as client`). Sync wrappers (methods without `_async`) handle this automatically.
 
 ---
 
@@ -454,7 +459,7 @@ client.scrape.generic.url(url="...")
 client.search.linkedin.jobs(keyword="...", location="...")
 client.search.instagram.posts(url="...", num_of_posts=10)
 client.search.google(query="...")
-client.search.chatGPT(prompt="...")
+client.scrape.chatgpt.prompt(prompt="...")
 
 # Direct service access (advanced)
 client.web_unlocker.fetch(url="...")
@@ -600,9 +605,9 @@ The SDK includes a powerful CLI tool:
 # Help
 brightdata --help
 
-# Scrape Amazon product
+# Scrape Amazon product (URL is positional argument)
 brightdata scrape amazon products \
-  --url "https://amazon.com/dp/B0CRMZHDG8" \
+  "https://amazon.com/dp/B0CRMZHDG8" \
   --output-format json
 
 # Search LinkedIn jobs
@@ -612,14 +617,14 @@ brightdata search linkedin jobs \
   --remote \
   --output-file jobs.json
 
-# Search Google
+# Search Google (query is positional argument)
 brightdata search google \
-  --query "python tutorial" \
+  "python tutorial" \
   --location "United States"
 
-# Generic web scraping
+# Generic web scraping (URL is positional argument)
 brightdata scrape generic \
-  --url "https://example.com" \
+  "https://example.com" \
   --output-format pretty
 ```
 
@@ -799,8 +804,7 @@ result = client.scrape.amazon.reviews(
     url="https://amazon.com/dp/B123",
     pastDays=7,              # Last 7 days only
     keyWord="quality",       # Filter by keyword
-    numOfReviews=50,         # Limit to 50 reviews
-    sync=True
+    numOfReviews=50          # Limit to 50 reviews
 )
 
 # LinkedIn jobs with extensive filters
@@ -816,23 +820,30 @@ result = client.search.linkedin.jobs(
 )
 ```
 
-### Sync vs Async Modes
+### Sync vs Async Methods
 
 ```python
-# Sync mode (default) - immediate response
+# Sync wrapper - for simple scripts (blocks until complete)
 result = client.scrape.linkedin.profiles(
     url="https://linkedin.com/in/johndoe",
-    sync=True,      # Immediate response (faster but limited timeout)
-    timeout=65      # Max 65 seconds
+    timeout=300      # Max wait time in seconds
 )
 
-# Async mode - polling for long operations
-result = client.scrape.linkedin.profiles(
-    url="https://linkedin.com/in/johndoe",
-    sync=False,     # Trigger + poll (can wait longer)
-    timeout=300     # Max 5 minutes
-)
+# Async method - for concurrent operations (requires async context)
+import asyncio
+
+async def scrape_profiles():
+    async with BrightDataClient() as client:
+        result = await client.scrape.linkedin.profiles_async(
+            url="https://linkedin.com/in/johndoe",
+            timeout=300
+        )
+        return result
+
+result = asyncio.run(scrape_profiles())
 ```
+
+**Note:** Sync wrappers (e.g., `profiles()`) internally use `asyncio.run()` and cannot be called from within an existing async context. Use `*_async` methods when you're already in an async function.
 
 ### SSL Certificate Error Handling
 
@@ -1100,11 +1111,10 @@ if client.test_connection_sync():
     )
     
     if product.success:
-        print(f"Product: {product.data['title']}")
-        print(f"Price: {product.data['price']}")
-        print(f"Rating: {product.data['rating']}")
+        print(f"Product: {product.data[0]['title']}")
+        print(f"Price: {product.data[0]['final_price']}")
+        print(f"Rating: {product.data[0]['rating']}")
         print(f"Cost: ${product.cost:.4f}")
-        print(f"Method: {product.method}")  # "web_scraper", "web_unlocker", etc.
     
     # Search LinkedIn jobs
     jobs = client.search.linkedin.jobs(
@@ -1113,25 +1123,28 @@ if client.test_connection_sync():
         remote=True
     )
     
-    print(f"Found {jobs.row_count} jobs")
+    if jobs.success:
+        print(f"Found {len(jobs.data)} jobs")
     
     # Scrape Facebook posts
     fb_posts = client.scrape.facebook.posts_by_profile(
-        url="https://facebook.com/profile",
+        url="https://facebook.com/zuck",
         num_of_posts=10,
         timeout=240
     )
     
-    print(f"Scraped {len(fb_posts.data)} Facebook posts")
+    if fb_posts.success:
+        print(f"Scraped {len(fb_posts.data)} Facebook posts")
     
     # Scrape Instagram profile
     ig_profile = client.scrape.instagram.profiles(
-        url="https://instagram.com/username",
+        url="https://instagram.com/instagram",
         timeout=240
     )
     
-    print(f"Profile: {ig_profile.data['username']}")
-    print(f"Followers: {ig_profile.data['followers']}")
+    if ig_profile.success:
+        print(f"Profile: {ig_profile.data[0]['username']}")
+        print(f"Followers: {ig_profile.data[0]['followers_count']}")
     
     # Search Google
     search_results = client.search.google(
@@ -1140,8 +1153,9 @@ if client.test_connection_sync():
         num_results=10
     )
     
-    for i, item in enumerate(search_results.data, 1):
-        print(f"{i}. {item['title']}")
+    if search_results.success:
+        for i, item in enumerate(search_results.data[:5], 1):
+            print(f"{i}. {item.get('title', 'N/A')}")
 ```
 
 ### Interactive CLI Demo

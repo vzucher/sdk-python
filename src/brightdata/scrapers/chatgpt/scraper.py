@@ -157,13 +157,11 @@ class ChatGPTScraper(BaseWebScraper):
             dataset_id=self.DATASET_ID
         )
         
-        sdk_function = get_caller_function_name()
-        
         return ScrapeJob(
             snapshot_id=snapshot_id,
-            scraper=self,
-            dataset_id=self.DATASET_ID,
-            sdk_function=sdk_function or "prompt_trigger"
+            api_client=self.api_client,
+            platform_name=self.PLATFORM_NAME,
+            cost_per_record=self.COST_PER_RECORD,
         )
     
     def prompt_trigger(
@@ -307,13 +305,11 @@ class ChatGPTScraper(BaseWebScraper):
             dataset_id=self.DATASET_ID
         )
         
-        sdk_function = get_caller_function_name()
-        
         return ScrapeJob(
             snapshot_id=snapshot_id,
-            scraper=self,
-            dataset_id=self.DATASET_ID,
-            sdk_function=sdk_function or "prompts_trigger"
+            api_client=self.api_client,
+            platform_name=self.PLATFORM_NAME,
+            cost_per_record=self.COST_PER_RECORD,
         )
     
     def prompts_trigger(

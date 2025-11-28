@@ -165,9 +165,9 @@ class FacebookScraper(BaseWebScraper):
         
         return ScrapeJob(
             snapshot_id=snapshot_id,
-            scraper=self,
-            dataset_id=self.DATASET_ID_POSTS_PROFILE,
-            sdk_function=sdk_function or "posts_by_profile_trigger"
+            api_client=self.api_client,
+            platform_name=self.PLATFORM_NAME,
+            cost_per_record=self.COST_PER_RECORD,
         )
     
     def posts_by_profile_trigger(self, url: Union[str, List[str]], **kwargs) -> "ScrapeJob":
@@ -266,7 +266,12 @@ class FacebookScraper(BaseWebScraper):
         url_list = [url] if isinstance(url, str) else url
         payload = [{"url": u, **{k: v for k, v in kwargs.items() if v is not None}} for u in url_list]
         snapshot_id = await self.api_client.trigger(payload=payload, dataset_id=self.DATASET_ID_POSTS_GROUP)
-        return ScrapeJob(snapshot_id=snapshot_id, scraper=self, dataset_id=self.DATASET_ID_POSTS_GROUP, sdk_function=sdk_function or "posts_by_group_trigger")
+        return ScrapeJob(
+            snapshot_id=snapshot_id,
+            api_client=self.api_client,
+            platform_name=self.PLATFORM_NAME,
+            cost_per_record=self.COST_PER_RECORD,
+        )
     
     def posts_by_group_trigger(self, url: Union[str, List[str]], **kwargs) -> "ScrapeJob":
         """Trigger Facebook posts by group scrape (sync wrapper)."""
@@ -442,7 +447,12 @@ class FacebookScraper(BaseWebScraper):
         url_list = [url] if isinstance(url, str) else url
         payload = [{"url": u, **{k: v for k, v in kwargs.items() if v is not None}} for u in url_list]
         snapshot_id = await self.api_client.trigger(payload=payload, dataset_id=self.DATASET_ID_COMMENTS)
-        return ScrapeJob(snapshot_id=snapshot_id, scraper=self, dataset_id=self.DATASET_ID_COMMENTS, sdk_function=sdk_function or "comments_trigger")
+        return ScrapeJob(
+            snapshot_id=snapshot_id,
+            api_client=self.api_client,
+            platform_name=self.PLATFORM_NAME,
+            cost_per_record=self.COST_PER_RECORD,
+        )
     
     def comments_trigger(self, url: Union[str, List[str]], **kwargs) -> "ScrapeJob":
         """Trigger Facebook comments scrape (sync wrapper)."""
@@ -540,7 +550,12 @@ class FacebookScraper(BaseWebScraper):
         url_list = [url] if isinstance(url, str) else url
         payload = [{"url": u, **{k: v for k, v in kwargs.items() if v is not None}} for u in url_list]
         snapshot_id = await self.api_client.trigger(payload=payload, dataset_id=self.DATASET_ID_REELS)
-        return ScrapeJob(snapshot_id=snapshot_id, scraper=self, dataset_id=self.DATASET_ID_REELS, sdk_function=sdk_function or "reels_trigger")
+        return ScrapeJob(
+            snapshot_id=snapshot_id,
+            api_client=self.api_client,
+            platform_name=self.PLATFORM_NAME,
+            cost_per_record=self.COST_PER_RECORD,
+        )
     
     def reels_trigger(self, url: Union[str, List[str]], **kwargs) -> "ScrapeJob":
         """Trigger Facebook reels scrape (sync wrapper)."""
