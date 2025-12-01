@@ -268,36 +268,32 @@ class LinkedInSearchScraper:
         companies = self._normalize_param(company, batch_size)
         location_radii = self._normalize_param(locationRadius, batch_size)
         
-        # Build payload
+        # Build payload - LinkedIn API requires URLs, not search parameters
+        # If keyword/location provided, build LinkedIn job search URL internally
         payload = []
         for i in range(batch_size):
-            item: Dict[str, Any] = {}
-            
+            # If URL provided directly, use it
             if urls and i < len(urls):
-                item["url"] = urls[i]
-            if locations and i < len(locations):
-                item["location"] = locations[i]
-            if keywords and i < len(keywords):
-                item["keyword"] = keywords[i]
-            if countries and i < len(countries):
-                item["country"] = countries[i]
-            if time_ranges and i < len(time_ranges):
-                item["timeRange"] = time_ranges[i]
-            if job_types and i < len(job_types):
-                item["jobType"] = job_types[i]
-            if experience_levels and i < len(experience_levels):
-                item["experienceLevel"] = experience_levels[i]
-            if remote is not None:
-                item["remote"] = remote
-            if companies and i < len(companies):
-                item["company"] = companies[i]
-            if location_radii and i < len(location_radii):
-                item["locationRadius"] = location_radii[i]
+                item = {"url": urls[i]}
+            else:
+                # Build LinkedIn job search URL from parameters
+                search_url = self._build_linkedin_jobs_search_url(
+                    keyword=keywords[i] if keywords and i < len(keywords) else None,
+                    location=locations[i] if locations and i < len(locations) else None,
+                    country=countries[i] if countries and i < len(countries) else None,
+                    time_range=time_ranges[i] if time_ranges and i < len(time_ranges) else None,
+                    job_type=job_types[i] if job_types and i < len(job_types) else None,
+                    experience_level=experience_levels[i] if experience_levels and i < len(experience_levels) else None,
+                    remote=remote,
+                    company=companies[i] if companies and i < len(companies) else None,
+                    location_radius=location_radii[i] if location_radii and i < len(location_radii) else None,
+                )
+                item = {"url": search_url}
             
             payload.append(item)
 
-        # Use discovery dataset if searching by keyword/location, otherwise URL-based
-        dataset_id = self.DATASET_ID_JOBS_DISCOVERY if (keyword or location) else self.DATASET_ID_JOBS
+        # Always use URL-based dataset (discovery dataset doesn't support parameters)
+        dataset_id = self.DATASET_ID_JOBS
 
         return await self._execute_search(
             payload=payload,
@@ -375,6 +371,119 @@ class LinkedInSearchScraper:
             return [param] * target_length
         
         return param
+    
+    def _build_linkedin_jobs_search_url(
+        self,
+        keyword: Optional[str] = None,
+        location: Optional[str] = None,
+        country: Optional[str] = None,
+        time_range: Optional[str] = None,
+        job_type: Optional[str] = None,
+        experience_level: Optional[str] = None,
+        remote: Optional[bool] = None,
+        company: Optional[str] = None,
+        location_radius: Optional[str] = None,
+    ) -> str:
+        """
+        Build LinkedIn job search URL from parameters.
+        
+        LinkedIn API requires URLs, not raw search parameters.
+        This method constructs a valid LinkedIn job search URL from the provided filters.
+        
+        Args:
+            keyword: Job keyword/title
+            location: Location name
+            country: Country code
+            time_range: Time range filter
+            job_type: Job type filter
+            experience_level: Experience level filter
+            remote: Remote jobs only
+            company: Company name filter
+            location_radius: Location radius filter
+        
+        Returns:
+            LinkedIn job search URL
+        
+        Example:
+            >>> _build_linkedin_jobs_search_url(
+            ...     keyword="python developer",
+            ...     location="New York",
+            ...     remote=True
+            ... )
+            'https://www.linkedin.com/jobs/search/?keywords=python%20developer&location=New%20York&f_WT=2'
+        """
+        from urllib.parse import urlencode, quote_plus
+        
+        base_url = "https://www.linkedin.com/jobs/search/"
+        params = {}
+        
+        # Keywords
+        if keyword:
+            params["keywords"] = keyword
+        
+        # Location
+        if location:
+            params["location"] = location
+        
+        # Remote work type (f_WT: 1=on-site, 2=remote, 3=hybrid)
+        if remote:
+            params["f_WT"] = "2"
+        
+        # Experience level (f_E: 1=internship, 2=entry, 3=associate, 4=mid-senior, 5=director, 6=executive)
+        if experience_level:
+            level_map = {
+                "internship": "1",
+                "entry": "2",
+                "associate": "3",
+                "mid": "4",
+                "mid-senior": "4",
+                "senior": "4",
+                "director": "5",
+                "executive": "6"
+            }
+            if experience_level.lower() in level_map:
+                params["f_E"] = level_map[experience_level.lower()]
+        
+        # Job type (f_JT: F=full-time, P=part-time, C=contract, T=temporary, I=internship, V=volunteer, O=other)
+        if job_type:
+            type_map = {
+                "full-time": "F",
+                "full time": "F",
+                "part-time": "P",
+                "part time": "P",
+                "contract": "C",
+                "temporary": "T",
+                "internship": "I",
+                "volunteer": "V"
+            }
+            if job_type.lower() in type_map:
+                params["f_JT"] = type_map[job_type.lower()]
+        
+        # Time range (f_TPR: r86400=past 24h, r604800=past week, r2592000=past month)
+        if time_range:
+            time_map = {
+                "day": "r86400",
+                "past-day": "r86400",
+                "24h": "r86400",
+                "week": "r604800",
+                "past-week": "r604800",
+                "month": "r2592000",
+                "past-month": "r2592000"
+            }
+            if time_range.lower() in time_map:
+                params["f_TPR"] = time_map[time_range.lower()]
+        
+        # Company (f_C)
+        if company:
+            params["f_C"] = company
+        
+        # Build URL
+        if params:
+            url = f"{base_url}?{urlencode(params)}"
+        else:
+            url = base_url
+        
+        return url
     
     async def _execute_search(
         self,
