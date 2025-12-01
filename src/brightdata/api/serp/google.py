@@ -10,7 +10,7 @@ from ...core.engine import AsyncEngine
 class GoogleSERPService(BaseSERPService):
     """
     Google Search Engine Results Page service.
-    
+
     Provides normalized Google search results including:
     - Organic search results with ranking positions
     - Featured snippets
@@ -19,9 +19,9 @@ class GoogleSERPService(BaseSERPService):
     - Related searches
     - Sponsored/ad results
     """
-    
+
     SEARCH_ENGINE = "google"
-    
+
     def __init__(
         self,
         engine: AsyncEngine,
@@ -38,4 +38,3 @@ class GoogleSERPService(BaseSERPService):
             timeout=timeout,
             max_retries=max_retries,
         )
-

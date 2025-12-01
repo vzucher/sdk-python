@@ -31,9 +31,8 @@ async def test_amazon_products():
 
             try:
                 result = await scraper.products_async(
-                url="https://www.amazon.com/dp/B0CRMZHDG8",
-                timeout=240
-            )
+                    url="https://www.amazon.com/dp/B0CRMZHDG8", timeout=240
+                )
 
                 print(f"\n✅ API call succeeded")
                 print(f"⏱️  Elapsed: {result.elapsed_ms():.2f}ms" if result.elapsed_ms() else "")
@@ -41,7 +40,9 @@ async def test_amazon_products():
                 print(f"\n📊 Result analysis:")
                 print(f"   - result.success: {result.success}")
                 print(f"   - result.data type: {type(result.data)}")
-                print(f"   - result.status: {result.status if hasattr(result, 'status') else 'N/A'}")
+                print(
+                    f"   - result.status: {result.status if hasattr(result, 'status') else 'N/A'}"
+                )
                 print(f"   - result.error: {result.error if hasattr(result, 'error') else 'N/A'}")
 
                 if result.data:
@@ -60,6 +61,7 @@ async def test_amazon_products():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 
@@ -81,11 +83,11 @@ async def test_amazon_reviews():
 
             try:
                 result = await scraper.reviews_async(
-                url="https://www.amazon.com/dp/B0CRMZHDG8",
-                pastDays=30,
-                numOfReviews=10,
-                timeout=240
-            )
+                    url="https://www.amazon.com/dp/B0CRMZHDG8",
+                    pastDays=30,
+                    numOfReviews=10,
+                    timeout=240,
+                )
 
                 print(f"\n✅ API call succeeded")
                 print(f"⏱️  Elapsed: {result.elapsed_ms():.2f}ms" if result.elapsed_ms() else "")
@@ -93,7 +95,9 @@ async def test_amazon_reviews():
                 print(f"\n📊 Result analysis:")
                 print(f"   - result.success: {result.success}")
                 print(f"   - result.data type: {type(result.data)}")
-                print(f"   - result.status: {result.status if hasattr(result, 'status') else 'N/A'}")
+                print(
+                    f"   - result.status: {result.status if hasattr(result, 'status') else 'N/A'}"
+                )
                 print(f"   - result.error: {result.error if hasattr(result, 'error') else 'N/A'}")
 
                 if result.data:
@@ -105,7 +109,7 @@ async def test_amazon_reviews():
                             print(f"   - Title: {review.get('title', 'N/A')[:60]}...")
                             print(f"   - Author: {review.get('author', 'N/A')}")
                     elif isinstance(result.data, dict):
-                        reviews = result.data.get('reviews', [])
+                        reviews = result.data.get("reviews", [])
                         print(f"\n✅ Got {len(reviews)} reviews")
                     else:
                         print(f"   Data: {result.data}")
@@ -115,6 +119,7 @@ async def test_amazon_reviews():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 

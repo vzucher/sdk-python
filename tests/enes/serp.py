@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from brightdata import BrightDataClient
 
+
 async def test_serp_raw_html_issue():
     """Test showing SERP returns raw HTML that SDK can't parse."""
 
@@ -49,8 +50,12 @@ async def test_serp_raw_html_issue():
                 print(f"\n❌ Got 0 results (empty list)")
                 print(f"\n🔍 Why this happens:")
                 print(f"   1. SDK sends: format='json' (expecting parsed data)")
-                print(f"   2. API returns: {{'status_code': 200, 'headers': {{...}}, 'body': '<html>...'}}")
-                print(f"   3. SDK's normalizer looks for 'organic' field but finds 'body' with HTML")
+                print(
+                    f"   2. API returns: {{'status_code': 200, 'headers': {{...}}, 'body': '<html>...'}}"
+                )
+                print(
+                    f"   3. SDK's normalizer looks for 'organic' field but finds 'body' with HTML"
+                )
                 print(f"   4. Normalizer returns empty list since it can't parse HTML")
 
                 # Make a direct API call to show what's really returned
@@ -90,8 +95,12 @@ async def test_serp_raw_html_issue():
                                 print(f"   - {key}: {value}")
 
                     print(f"\n⚠️  The problem:")
-                    print(f"   - SDK expects: {{'organic': [...], 'ads': [...], 'featured_snippet': {{...}}}}")
-                    print(f"   - API returns: {{'status_code': 200, 'headers': {{...}}, 'body': '<html>'}}")
+                    print(
+                        f"   - SDK expects: {{'organic': [...], 'ads': [...], 'featured_snippet': {{...}}}}"
+                    )
+                    print(
+                        f"   - API returns: {{'status_code': 200, 'headers': {{...}}, 'body': '<html>'}}"
+                    )
                     print(f"   - Result: SDK can't extract search results from raw HTML")
 
         except Exception as e:
@@ -100,7 +109,8 @@ async def test_serp_raw_html_issue():
     print("\n" + "=" * 60)
     print("SUMMARY:")
     print("-" * 40)
-    print("""
+    print(
+        """
 The SERP API returns raw HTML but the SDK expects parsed JSON.
 This is why all SERP searches return 0 results.
 
@@ -108,7 +118,9 @@ To fix this, either:
 1. The SERP zone needs to return parsed data (not raw HTML)
 2. The SDK needs an HTML parser (BeautifulSoup, etc.)
 3. A different Bright Data service/endpoint should be used
-""")
+"""
+    )
+
 
 if __name__ == "__main__":
     asyncio.run(test_serp_raw_html_issue())

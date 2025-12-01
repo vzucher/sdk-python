@@ -9,9 +9,9 @@ from ...core.engine import AsyncEngine
 
 class YandexSERPService(BaseSERPService):
     """Yandex Search Engine Results Page service."""
-    
+
     SEARCH_ENGINE = "yandex"
-    
+
     def __init__(
         self,
         engine: AsyncEngine,
@@ -28,4 +28,3 @@ class YandexSERPService(BaseSERPService):
             timeout=timeout,
             max_retries=max_retries,
         )
-

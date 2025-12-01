@@ -32,9 +32,7 @@ async def test_facebook_posts_by_profile():
 
             try:
                 result = await scraper.posts_by_profile_async(
-                    url="https://www.facebook.com/facebook",
-                    num_of_posts=5,
-                    timeout=240
+                    url="https://www.facebook.com/facebook", num_of_posts=5, timeout=240
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -49,7 +47,11 @@ async def test_facebook_posts_by_profile():
                         print(f"\n✅ Got {len(result.data)} posts:")
                         for i, post in enumerate(result.data[:3], 1):
                             print(f"\n   Post {i}:")
-                            print(f"   - Text: {post.get('text', 'N/A')[:60]}..." if post.get('text') else "   - Text: N/A")
+                            print(
+                                f"   - Text: {post.get('text', 'N/A')[:60]}..."
+                                if post.get("text")
+                                else "   - Text: N/A"
+                            )
                             print(f"   - Likes: {post.get('likes', 'N/A')}")
                             print(f"   - Comments: {post.get('comments', 'N/A')}")
                             print(f"   - Shares: {post.get('shares', 'N/A')}")
@@ -65,6 +67,7 @@ async def test_facebook_posts_by_profile():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 
@@ -86,9 +89,7 @@ async def test_facebook_posts_by_group():
 
             try:
                 result = await scraper.posts_by_group_async(
-                    url="https://www.facebook.com/groups/example",
-                    num_of_posts=5,
-                    timeout=240
+                    url="https://www.facebook.com/groups/example", num_of_posts=5, timeout=240
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -103,7 +104,11 @@ async def test_facebook_posts_by_group():
                         print(f"\n✅ Got {len(result.data)} posts:")
                         for i, post in enumerate(result.data[:3], 1):
                             print(f"\n   Post {i}:")
-                            print(f"   - Text: {post.get('text', 'N/A')[:60]}..." if post.get('text') else "   - Text: N/A")
+                            print(
+                                f"   - Text: {post.get('text', 'N/A')[:60]}..."
+                                if post.get("text")
+                                else "   - Text: N/A"
+                            )
                             print(f"   - Author: {post.get('author', 'N/A')}")
                             print(f"   - Likes: {post.get('likes', 'N/A')}")
                     elif isinstance(result.data, dict):
@@ -116,6 +121,7 @@ async def test_facebook_posts_by_group():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 
@@ -136,8 +142,7 @@ async def test_facebook_posts_by_url():
 
             try:
                 result = await scraper.posts_by_url_async(
-                    url="https://www.facebook.com/facebook/posts/123456789",
-                    timeout=240
+                    url="https://www.facebook.com/facebook/posts/123456789", timeout=240
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -150,7 +155,11 @@ async def test_facebook_posts_by_url():
                 if result.data:
                     print(f"\n✅ Got post data:")
                     if isinstance(result.data, dict):
-                        print(f"   - Text: {result.data.get('text', 'N/A')[:60]}..." if result.data.get('text') else "   - Text: N/A")
+                        print(
+                            f"   - Text: {result.data.get('text', 'N/A')[:60]}..."
+                            if result.data.get("text")
+                            else "   - Text: N/A"
+                        )
                         print(f"   - Likes: {result.data.get('likes', 'N/A')}")
                         print(f"   - Comments: {result.data.get('comments', 'N/A')}")
                         print(f"   - Shares: {result.data.get('shares', 'N/A')}")
@@ -163,6 +172,7 @@ async def test_facebook_posts_by_url():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 
@@ -186,7 +196,7 @@ async def test_facebook_comments():
                 result = await scraper.comments_async(
                     url="https://www.facebook.com/facebook/posts/123456789",
                     num_of_comments=10,
-                    timeout=240
+                    timeout=240,
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -201,11 +211,15 @@ async def test_facebook_comments():
                         print(f"\n✅ Got {len(result.data)} comments:")
                         for i, comment in enumerate(result.data[:3], 1):
                             print(f"\n   Comment {i}:")
-                            print(f"   - Text: {comment.get('text', 'N/A')[:60]}..." if comment.get('text') else "   - Text: N/A")
+                            print(
+                                f"   - Text: {comment.get('text', 'N/A')[:60]}..."
+                                if comment.get("text")
+                                else "   - Text: N/A"
+                            )
                             print(f"   - Author: {comment.get('author', 'N/A')}")
                             print(f"   - Likes: {comment.get('likes', 'N/A')}")
                     elif isinstance(result.data, dict):
-                        comments = result.data.get('comments', [])
+                        comments = result.data.get("comments", [])
                         print(f"\n✅ Got {len(comments)} comments")
                     else:
                         print(f"   Data: {result.data}")
@@ -215,6 +229,7 @@ async def test_facebook_comments():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 
@@ -236,9 +251,7 @@ async def test_facebook_reels():
 
             try:
                 result = await scraper.reels_async(
-                    url="https://www.facebook.com/facebook",
-                    num_of_posts=5,
-                    timeout=240
+                    url="https://www.facebook.com/facebook", num_of_posts=5, timeout=240
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -253,7 +266,11 @@ async def test_facebook_reels():
                         print(f"\n✅ Got {len(result.data)} reels:")
                         for i, reel in enumerate(result.data[:3], 1):
                             print(f"\n   Reel {i}:")
-                            print(f"   - Text: {reel.get('text', 'N/A')[:60]}..." if reel.get('text') else "   - Text: N/A")
+                            print(
+                                f"   - Text: {reel.get('text', 'N/A')[:60]}..."
+                                if reel.get("text")
+                                else "   - Text: N/A"
+                            )
                             print(f"   - Views: {reel.get('views', 'N/A')}")
                             print(f"   - Likes: {reel.get('likes', 'N/A')}")
                     elif isinstance(result.data, dict):
@@ -266,6 +283,7 @@ async def test_facebook_reels():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 

@@ -39,9 +39,9 @@ def test_auto_zone_creation():
     3. Triggers zone creation
     4. Shows newly created zones
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("TEST 3: AUTO ZONE CREATION")
-    print("="*60)
+    print("=" * 60)
 
     print("\n📝 Test Setup:")
     print("   - auto_create_zones=True")
@@ -53,8 +53,8 @@ def test_auto_zone_creation():
     initial_client = BrightDataClient(validate_token=False)
     try:
         initial_info = initial_client.get_account_info_sync()
-        initial_zones = initial_info.get('zones', [])
-        initial_zone_names = {z.get('name') for z in initial_zones}
+        initial_zones = initial_info.get("zones", [])
+        initial_zone_names = {z.get("name") for z in initial_zones}
         print(f"✅ Initial zones: {len(initial_zones)}")
         if initial_zones:
             for zone in initial_zones:
@@ -74,7 +74,7 @@ def test_auto_zone_creation():
         web_unlocker_zone=f"sdk_unlocker_{timestamp}",
         serp_zone=f"sdk_serp_{timestamp}",
         browser_zone=f"sdk_browser_{timestamp}",
-        validate_token=False
+        validate_token=False,
     )
 
     print("✅ Client initialized with zone names:")
@@ -91,12 +91,12 @@ def test_auto_zone_creation():
     # Attempt Web Unlocker zone creation
     print(f"\n1️⃣ Attempting to create Web Unlocker zone: {client.web_unlocker_zone}")
     try:
+
         async def create_web_unlocker():
             async with client:
                 # This should trigger zone creation
                 result = await client.scrape_url_async(
-                    url="https://example.com",
-                    zone=client.web_unlocker_zone
+                    url="https://example.com", zone=client.web_unlocker_zone
                 )
                 return result
 
@@ -117,13 +117,11 @@ def test_auto_zone_creation():
     # Attempt SERP zone creation
     print(f"\n2️⃣ Attempting to create SERP zone: {client.serp_zone}")
     try:
+
         async def create_serp():
             async with client:
                 # This should trigger SERP zone creation
-                result = await client.search.google_async(
-                    query="test",
-                    zone=client.serp_zone
-                )
+                result = await client.search.google_async(query="test", zone=client.serp_zone)
                 return result
 
         result = asyncio.run(create_serp())
@@ -144,8 +142,8 @@ def test_auto_zone_creation():
     print("\n📊 Getting final zone list...")
     try:
         final_info = client.get_account_info_sync()
-        final_zones = final_info.get('zones', [])
-        final_zone_names = {z.get('name') for z in final_zones}
+        final_zones = final_info.get("zones", [])
+        final_zone_names = {z.get("name") for z in final_zones}
 
         # Identify newly created zones
         new_zone_names = final_zone_names - initial_zone_names
@@ -157,14 +155,14 @@ def test_auto_zone_creation():
 
         if new_zone_names:
             print(f"\n✅ NEWLY CREATED ZONES ({len(new_zone_names)}):")
-            print("   " + "="*40)
+            print("   " + "=" * 40)
 
             for zone in final_zones:
-                zone_name = zone.get('name', 'unknown')
+                zone_name = zone.get("name", "unknown")
                 if zone_name in new_zone_names:
-                    zone_type = zone.get('type', 'unknown')
-                    zone_status = zone.get('status')
-                    zone_created = zone.get('created_at', 'unknown')
+                    zone_type = zone.get("type", "unknown")
+                    zone_status = zone.get("status")
+                    zone_created = zone.get("created_at", "unknown")
 
                     print(f"\n   🆕 {zone_name}")
                     print(f"      Type: {zone_type}")
@@ -179,7 +177,7 @@ def test_auto_zone_creation():
                     elif zone_name == client.browser_zone:
                         print(f"      ✓ This is our Browser zone")
 
-            print("\n" + "="*60)
+            print("\n" + "=" * 60)
             print("TEST RESULT: ✅ PASSED")
             print(f"Successfully created {len(new_zone_names)} new zone(s)")
             return True
@@ -191,14 +189,14 @@ def test_auto_zone_creation():
             print("   3. Zone creation requires manual approval")
             print("   4. Account has reached zone limit")
 
-            print("\n" + "="*60)
+            print("\n" + "=" * 60)
             print("TEST RESULT: ❌ FAILED")
             print("No new zones were created")
             return False
 
     except Exception as e:
         print(f"\n❌ Error getting final zones: {e}")
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("TEST RESULT: ❌ ERROR")
         return False
 

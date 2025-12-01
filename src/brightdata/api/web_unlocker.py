@@ -24,23 +24,23 @@ from ..exceptions import ValidationError, APIError
 class WebUnlockerService(BaseAPI):
     """
     High-level service wrapper around Bright Data's Web Unlocker proxy service.
-    
+
     Provides simple HTTP-based scraping with anti-bot capabilities. This is the
     fastest, most cost-effective option for basic HTML extraction without JavaScript rendering.
-    
+
     Example:
         >>> async with AsyncEngine(token) as engine:
         ...     service = WebUnlockerService(engine)
         ...     result = await service.scrape_async("https://example.com", zone="my_zone")
         ...     print(result.data)
     """
-    
+
     ENDPOINT = "/request"
-    
+
     async def _execute_async(self, *args: Any, **kwargs: Any) -> Any:
         """Execute API operation asynchronously."""
         return await self.scrape_async(*args, **kwargs)
-    
+
     async def scrape_async(
         self,
         url: Union[str, List[str]],
@@ -52,7 +52,7 @@ class WebUnlockerService(BaseAPI):
     ) -> Union[ScrapeResult, List[ScrapeResult]]:
         """
         Scrape URL(s) asynchronously using Web Unlocker API.
-        
+
         Args:
             url: Single URL string or list of URLs to scrape.
             zone: Bright Data zone identifier.
@@ -60,10 +60,10 @@ class WebUnlockerService(BaseAPI):
             response_format: Response format - "json" for structured data, "raw" for HTML string.
             method: HTTP method for the request (default: "GET").
             timeout: Request timeout in seconds (uses engine default if not provided).
-        
+
         Returns:
             ScrapeResult for single URL, or List[ScrapeResult] for multiple URLs.
-        
+
         Raises:
             ValidationError: If input validation fails.
             APIError: If API request fails.
@@ -72,10 +72,10 @@ class WebUnlockerService(BaseAPI):
         validate_response_format(response_format)
         validate_http_method(method)
         validate_country_code(country)
-        
+
         if timeout is not None:
             validate_timeout(timeout)
-        
+
         if isinstance(url, list):
             validate_url_list(url)
             return await self._scrape_multiple_async(
@@ -96,7 +96,7 @@ class WebUnlockerService(BaseAPI):
                 method=method,
                 timeout=timeout,
             )
-    
+
     async def _scrape_single_async(
         self,
         url: str,
@@ -108,29 +108,28 @@ class WebUnlockerService(BaseAPI):
     ) -> ScrapeResult:
         """Scrape a single URL."""
         trigger_sent_at = datetime.now(timezone.utc)
-        
+
         payload: Dict[str, Any] = {
             "zone": zone,
             "url": url,
             "format": response_format,
             "method": method,
         }
-        
+
         if country:
             payload["country"] = country.upper()
-        
+
         sdk_function = get_caller_function_name()
         if sdk_function:
             payload["sdk_function"] = sdk_function
-        
+
         try:
             # Make the request and read response body immediately
             async with self.engine.post_to_url(
-                f"{self.engine.BASE_URL}{self.ENDPOINT}",
-                json_data=payload
+                f"{self.engine.BASE_URL}{self.ENDPOINT}", json_data=payload
             ) as response:
                 data_fetched_at = datetime.now(timezone.utc)
-                
+
                 if response.status == HTTP_OK:
                     if response_format == "json":
                         try:
@@ -139,10 +138,10 @@ class WebUnlockerService(BaseAPI):
                             raise APIError(f"Failed to parse JSON response: {str(e)}")
                     else:
                         data = await response.text()
-                    
+
                     root_domain = extract_root_domain(url)
                     html_char_size = len(data) if isinstance(data, str) else None
-                    
+
                     return ScrapeResult(
                         success=True,
                         url=url,
@@ -166,13 +165,13 @@ class WebUnlockerService(BaseAPI):
                         trigger_sent_at=trigger_sent_at,
                         data_fetched_at=data_fetched_at,
                     )
-        
+
         except Exception as e:
             data_fetched_at = datetime.now(timezone.utc)
-            
+
             if isinstance(e, (ValidationError, APIError)):
                 raise
-            
+
             return ScrapeResult(
                 success=False,
                 url=url,
@@ -182,7 +181,7 @@ class WebUnlockerService(BaseAPI):
                 trigger_sent_at=trigger_sent_at,
                 data_fetched_at=data_fetched_at,
             )
-    
+
     async def _scrape_multiple_async(
         self,
         urls: List[str],
@@ -204,9 +203,9 @@ class WebUnlockerService(BaseAPI):
             )
             for url in urls
         ]
-        
+
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         processed_results: List[ScrapeResult] = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
@@ -222,9 +221,9 @@ class WebUnlockerService(BaseAPI):
                 )
             else:
                 processed_results.append(result)
-        
+
         return processed_results
-    
+
     def scrape(
         self,
         url: Union[str, List[str]],
@@ -236,7 +235,7 @@ class WebUnlockerService(BaseAPI):
     ) -> Union[ScrapeResult, List[ScrapeResult]]:
         """
         Scrape URL(s) synchronously.
-        
+
         Args:
             url: Single URL string or list of URLs to scrape.
             zone: Bright Data zone identifier.
@@ -244,7 +243,7 @@ class WebUnlockerService(BaseAPI):
             response_format: Response format - "json" for structured data, "raw" for HTML string.
             method: HTTP method for the request (default: "GET").
             timeout: Request timeout in seconds.
-        
+
         Returns:
             ScrapeResult for single URL, or List[ScrapeResult] for multiple URLs.
         """

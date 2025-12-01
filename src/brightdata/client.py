@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     pass
@@ -33,48 +34,43 @@ from .constants import (
     HTTP_UNAUTHORIZED,
     HTTP_FORBIDDEN,
 )
-from .exceptions import (
-    ValidationError,
-    AuthenticationError,
-    APIError,
-    BrightDataError
-)
+from .exceptions import ValidationError, AuthenticationError, APIError, BrightDataError
 
 
 class BrightDataClient:
     """
     Main entry point for Bright Data SDK.
-    
+
     Single, unified interface for all BrightData services including scraping,
     search, and crawling capabilities. Handles authentication, configuration,
     and provides hierarchical access to specialized services.
-    
+
     Examples:
         >>> # Simple instantiation - auto-loads from environment
         >>> client = BrightDataClient()
-        >>> 
+        >>>
         >>> # Explicit token
         >>> client = BrightDataClient(token="your_api_token")
-        >>> 
+        >>>
         >>> # Service access (planned)
         >>> client.scrape.amazon.products(...)
         >>> client.search.linkedin.jobs(...)
         >>> client.crawler.discover(...)
-        >>> 
+        >>>
         >>> # Connection verification
         >>> is_valid = await client.test_connection()
         >>> info = await client.get_account_info()
     """
-    
+
     # Default configuration
     DEFAULT_TIMEOUT = 30
     DEFAULT_WEB_UNLOCKER_ZONE = "web_unlocker1"
     DEFAULT_SERP_ZONE = "serp_api1"
     DEFAULT_BROWSER_ZONE = "browser_api1"
-    
+
     # Environment variable name for API token
     TOKEN_ENV_VAR = "BRIGHTDATA_API_TOKEN"
-    
+
     def __init__(
         self,
         token: Optional[str] = None,
@@ -90,10 +86,10 @@ class BrightDataClient:
     ):
         """
         Initialize Bright Data client.
-        
+
         Authentication happens automatically from environment variables if not provided.
         Supports loading from .env files (requires python-dotenv package).
-        
+
         Args:
             token: API token. If None, loads from BRIGHTDATA_API_TOKEN environment variable
                   (supports .env files via python-dotenv)
@@ -106,15 +102,15 @@ class BrightDataClient:
             validate_token: Validate token by testing connection on init (default: False)
             rate_limit: Maximum requests per rate_period (default: 10). Set to None to disable.
             rate_period: Time period in seconds for rate limit (default: 1.0)
-        
+
         Raises:
             ValidationError: If token is not provided and not found in environment
             AuthenticationError: If validate_token=True and token is invalid
-        
+
         Example:
             >>> # Auto-load from environment
             >>> client = BrightDataClient()
-            >>> 
+            >>>
             >>> # Explicit configuration
             >>> client = BrightDataClient(
             ...     token="your_token",
@@ -129,14 +125,11 @@ class BrightDataClient:
         self.serp_zone = serp_zone or self.DEFAULT_SERP_ZONE
         self.browser_zone = browser_zone or self.DEFAULT_BROWSER_ZONE
         self.auto_create_zones = auto_create_zones
-        
+
         self.engine = AsyncEngine(
-            self.token, 
-            timeout=timeout,
-            rate_limit=rate_limit,
-            rate_period=rate_period
+            self.token, timeout=timeout, rate_limit=rate_limit, rate_period=rate_period
         )
-        
+
         self._scrape_service: Optional[ScrapeService] = None
         self._search_service: Optional[SearchService] = None
         self._crawler_service: Optional[CrawlerService] = None
@@ -148,19 +141,19 @@ class BrightDataClient:
 
         if validate_token:
             self._validate_token_sync()
-    
+
     def _load_token(self, token: Optional[str]) -> str:
         """
         Load token from parameter or environment variable.
-        
+
         Fails fast with clear error message if no token found.
-        
+
         Args:
             token: Explicit token (takes precedence)
-        
+
         Returns:
             Valid token string
-        
+
         Raises:
             ValidationError: If no token found
         """
@@ -171,12 +164,12 @@ class BrightDataClient:
                     f"Got: {type(token).__name__} with length {len(str(token))}"
                 )
             return token.strip()
-        
+
         # Try loading from environment variable
         env_token = os.getenv(self.TOKEN_ENV_VAR)
         if env_token:
             return env_token.strip()
-        
+
         # No token found - fail fast with helpful message
         raise ValidationError(
             f"API token required but not found.\n\n"
@@ -185,11 +178,11 @@ class BrightDataClient:
             f"  2. Set environment variable: {self.TOKEN_ENV_VAR}\n\n"
             f"Get your API token from: https://brightdata.com/cp/api_keys"
         )
-    
+
     def _validate_token_sync(self) -> None:
         """
         Validate token synchronously during initialization.
-        
+
         Raises:
             AuthenticationError: If token is invalid
         """
@@ -230,24 +223,23 @@ class BrightDataClient:
         await self._zone_manager.ensure_required_zones(
             web_unlocker_zone=self.web_unlocker_zone,
             serp_zone=self.serp_zone,
-            browser_zone=None  # Never auto-create browser zones
+            browser_zone=None,  # Never auto-create browser zones
         )
         self._zones_ensured = True
-
 
     @property
     def scrape(self) -> ScrapeService:
         """
         Access scraping services.
-        
+
         Provides hierarchical access to specialized scrapers:
         - client.scrape.amazon.products(...)
         - client.scrape.linkedin.profiles(...)
         - client.scrape.generic.url(...)
-        
+
         Returns:
             ScrapeService instance for accessing scrapers
-        
+
         Example:
             >>> result = client.scrape.amazon.products(
             ...     url="https://amazon.com/dp/B0123456"
@@ -256,20 +248,20 @@ class BrightDataClient:
         if self._scrape_service is None:
             self._scrape_service = ScrapeService(self)
         return self._scrape_service
-    
+
     @property
     def search(self) -> SearchService:
         """
         Access search services (SERP API).
-        
+
         Provides access to search engine result scrapers:
         - client.search.google(query="...")
         - client.search.bing(query="...")
         - client.search.linkedin.jobs(...)
-        
+
         Returns:
             SearchService instance for search operations
-        
+
         Example:
             >>> results = client.search.google(
             ...     query="python scraping",
@@ -279,19 +271,19 @@ class BrightDataClient:
         if self._search_service is None:
             self._search_service = SearchService(self)
         return self._search_service
-    
+
     @property
     def crawler(self) -> CrawlerService:
         """
         Access web crawling services.
-        
+
         Provides access to domain crawling capabilities:
         - client.crawler.discover(url="...")
         - client.crawler.sitemap(url="...")
-        
+
         Returns:
             CrawlerService instance for crawling operations
-        
+
         Example:
             >>> result = client.crawler.discover(
             ...     url="https://example.com",
@@ -301,25 +293,24 @@ class BrightDataClient:
         if self._crawler_service is None:
             self._crawler_service = CrawlerService(self)
         return self._crawler_service
-    
-    
+
     async def test_connection(self) -> bool:
         """
         Test API connection and token validity.
-        
+
         Makes a lightweight API call to verify:
         - Token is valid
         - API is reachable
         - Account is active
-        
+
         Returns:
             True if connection successful, False otherwise (never raises exceptions)
-        
+
         Note:
             This method never raises exceptions - it returns False for any errors
             (invalid token, network issues, etc.). This makes it safe for testing
             connectivity without exception handling.
-        
+
         Example:
             >>> is_valid = await client.test_connection()
             >>> if is_valid:
@@ -338,50 +329,50 @@ class BrightDataClient:
                     else:
                         self._is_connected = False
                         return False
-        
+
         except (asyncio.TimeoutError, OSError, Exception):
             self._is_connected = False
             return False
-    
+
     async def get_account_info(self, refresh: bool = False) -> AccountInfo:
         """
         Get account information including usage, limits, and quotas.
-        
+
         Note: This method caches the result by default. For fresh zone data,
         use list_zones() instead, or pass refresh=True.
-        
+
         Retrieves:
         - Account status
         - Active zones
         - Usage statistics
         - Credit balance
         - Rate limits
-        
+
         Args:
             refresh: If True, bypass cache and fetch fresh data (default: False)
-        
+
         Returns:
             Dictionary with account information
-        
+
         Raises:
             AuthenticationError: If token is invalid
             APIError: If API request fails
-        
+
         Example:
             >>> # Cached version (fast)
             >>> info = await client.get_account_info()
             >>> print(f"Active zones: {len(info['zones'])}")
-            
+
             >>> # Fresh data (use this after creating/deleting zones)
             >>> info = await client.get_account_info(refresh=True)
             >>> print(f"Active zones: {len(info['zones'])}")
-            
+
             >>> # Or better: use list_zones() for current zone list
             >>> zones = await client.list_zones()
         """
         if self._account_info is not None and not refresh:
             return self._account_info
-        
+
         try:
             # Engine context manager is idempotent, safe to enter multiple times
             async with self.engine:
@@ -391,7 +382,7 @@ class BrightDataClient:
                     if zones_response.status == HTTP_OK:
                         zones = await zones_response.json()
                         zones = zones or []
-                        
+
                         # Warn user if no active zones found (they might be inactive)
                         if not zones:
                             warnings.warn(
@@ -401,9 +392,9 @@ class BrightDataClient:
                                 "3. Check your dashboard at https://brightdata.com for zone status\n\n"
                                 "Note: The API only returns active zones. Inactive zones won't appear here.",
                                 UserWarning,
-                                stacklevel=2
+                                stacklevel=2,
                             )
-                        
+
                         account_info = {
                             "customer_id": self.customer_id,
                             "zones": zones,
@@ -411,10 +402,10 @@ class BrightDataClient:
                             "token_valid": True,
                             "retrieved_at": datetime.now(timezone.utc).isoformat(),
                         }
-                        
+
                         self._account_info = account_info
                         return account_info
-                    
+
                     elif zones_response.status in (HTTP_UNAUTHORIZED, HTTP_FORBIDDEN):
                         error_text = await zones_response.text()
                         raise AuthenticationError(
@@ -424,18 +415,18 @@ class BrightDataClient:
                         error_text = await zones_response.text()
                         raise APIError(
                             f"Failed to get account info (HTTP {zones_response.status}): {error_text}",
-                            status_code=zones_response.status
+                            status_code=zones_response.status,
                         )
-        
+
         except (AuthenticationError, APIError):
             raise
         except Exception as e:
             raise APIError(f"Unexpected error getting account info: {str(e)}")
-    
+
     def _run_async_with_cleanup(self, coro):
         """
         Run an async coroutine with proper cleanup.
-        
+
         This helper ensures that the event loop stays open long enough
         for all sessions and connectors to close properly, preventing
         "Unclosed client session" warnings.
@@ -461,16 +452,16 @@ class BrightDataClient:
                 loop.run_until_complete(asyncio.sleep(0.1))
             finally:
                 loop.close()
-    
+
     def get_account_info_sync(self, refresh: bool = False) -> AccountInfo:
         """
         Synchronous version of get_account_info().
-        
+
         Args:
             refresh: If True, bypass cache and fetch fresh data (default: False)
         """
         return self._run_async_with_cleanup(self.get_account_info(refresh=refresh))
-    
+
     def test_connection_sync(self) -> bool:
         """Synchronous version of test_connection()."""
         try:
@@ -516,7 +507,7 @@ class BrightDataClient:
             >>> # Delete a test zone
             >>> await client.delete_zone("test_zone_123")
             >>> print("Zone deleted successfully")
-            
+
             >>> # With error handling
             >>> try:
             ...     await client.delete_zone("my_zone")
@@ -536,7 +527,6 @@ class BrightDataClient:
         """Synchronous version of delete_zone()."""
         return self._run_async_with_cleanup(self.delete_zone(zone_name))
 
-
     async def scrape_url_async(
         self,
         url: Union[str, List[str]],
@@ -548,14 +538,14 @@ class BrightDataClient:
     ) -> Union[ScrapeResult, List[ScrapeResult]]:
         """
         Direct scraping method (flat API).
-        
+
         For backward compatibility. Prefer using hierarchical API:
         client.scrape.generic.url(...) for new code.
         """
         async with self.engine:
             if self._web_unlocker_service is None:
                 self._web_unlocker_service = WebUnlockerService(self.engine)
-            
+
             zone = zone or self.web_unlocker_zone
             return await self._web_unlocker_service.scrape_async(
                 url=url,
@@ -565,22 +555,21 @@ class BrightDataClient:
                 method=method,
                 timeout=timeout,
             )
-    
+
     def scrape_url(self, *args, **kwargs) -> Union[ScrapeResult, List[ScrapeResult]]:
         """Synchronous version of scrape_url_async()."""
         return asyncio.run(self.scrape_url_async(*args, **kwargs))
-    
-    
+
     async def __aenter__(self):
         """Async context manager entry."""
         await self.engine.__aenter__()
         await self._ensure_zones()
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit."""
         await self.engine.__aexit__(exc_type, exc_val, exc_tb)
-    
+
     def __repr__(self) -> str:
         """String representation for debugging."""
         token_preview = f"{self.token[:10]}...{self.token[-5:]}" if self.token else "None"

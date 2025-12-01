@@ -66,7 +66,7 @@ def test_list_zones():
         print(f"Retrieved At: {info.get('retrieved_at', 'Unknown')}")
 
         # Analyze zones
-        zones = info.get('zones', [])
+        zones = info.get("zones", [])
         print(f"\nTotal Zones: {len(zones)}")
 
         if not zones:
@@ -86,29 +86,29 @@ def test_list_zones():
             print(f"  Status: {zone.get('status', 'Unknown')}")
 
             # Check plan details if available
-            plan = zone.get('plan', {})
+            plan = zone.get("plan", {})
             if plan:
                 print(f"  Plan Type: {plan.get('type', 'Unknown')}")
                 print(f"  Plan Description: {plan.get('description', 'N/A')}")
 
             # Creation date if available
-            created = zone.get('created')
+            created = zone.get("created")
             if created:
                 print(f"  Created: {created}")
 
             # Try to determine zone capabilities based on name/plan
-            zone_name = zone.get('name', '').lower()
+            zone_name = zone.get("name", "").lower()
             capabilities = []
 
-            if 'unlocker' in zone_name or 'unblocker' in zone_name:
+            if "unlocker" in zone_name or "unblocker" in zone_name:
                 capabilities.append("Web Unlocker")
-            if 'serp' in zone_name or 'search' in zone_name:
+            if "serp" in zone_name or "search" in zone_name:
                 capabilities.append("SERP/Search")
-            if 'browser' in zone_name or 'scraper' in zone_name:
+            if "browser" in zone_name or "scraper" in zone_name:
                 capabilities.append("Browser/Scraper")
-            if 'residential' in zone_name:
+            if "residential" in zone_name:
                 capabilities.append("Residential Proxy")
-            if 'datacenter' in zone_name:
+            if "datacenter" in zone_name:
                 capabilities.append("Datacenter Proxy")
 
             if capabilities:
@@ -118,7 +118,7 @@ def test_list_zones():
         print_section("ZONE CONFIGURATION SUGGESTIONS")
 
         # Check for Web Unlocker zone
-        unlocker_zones = [z for z in zones if 'unlocker' in z.get('name', '').lower()]
+        unlocker_zones = [z for z in zones if "unlocker" in z.get("name", "").lower()]
         if unlocker_zones:
             print(f"✅ Web Unlocker zone found: {unlocker_zones[0].get('name')}")
             print(f"   Use: BrightDataClient(web_unlocker_zone='{unlocker_zones[0].get('name')}')")
@@ -127,7 +127,7 @@ def test_list_zones():
             print("   Suggestion: Create a zone with Web Unlocker service enabled")
 
         # Check for SERP zone
-        serp_zones = [z for z in zones if 'serp' in z.get('name', '').lower()]
+        serp_zones = [z for z in zones if "serp" in z.get("name", "").lower()]
         if serp_zones:
             print(f"\n✅ SERP zone found: {serp_zones[0].get('name')}")
             print(f"   Use: BrightDataClient(serp_zone='{serp_zones[0].get('name')}')")
@@ -136,7 +136,11 @@ def test_list_zones():
             print("   Suggestion: Create a zone with SERP API service enabled")
 
         # Check for Browser zone
-        browser_zones = [z for z in zones if 'browser' in z.get('name', '').lower() or 'scraper' in z.get('name', '').lower()]
+        browser_zones = [
+            z
+            for z in zones
+            if "browser" in z.get("name", "").lower() or "scraper" in z.get("name", "").lower()
+        ]
         if browser_zones:
             print(f"\n✅ Browser/Scraper zone found: {browser_zones[0].get('name')}")
             print(f"   Use: BrightDataClient(browser_zone='{browser_zones[0].get('name')}')")
@@ -149,7 +153,7 @@ def test_list_zones():
 
         if zones:
             # Try to use the first zone for a test
-            first_zone = zones[0].get('name')
+            first_zone = zones[0].get("name")
             print(f"\nTesting with zone: {first_zone}")
 
             try:
@@ -158,10 +162,7 @@ def test_list_zones():
 
                 # Try a simple scrape
                 print(f"Attempting to scrape with zone '{first_zone}'...")
-                result = test_client.scrape_url(
-                    "https://httpbin.org/html",
-                    zone=first_zone
-                )
+                result = test_client.scrape_url("https://httpbin.org/html", zone=first_zone)
 
                 if result.success:
                     print(f"✅ Zone '{first_zone}' is working!")
@@ -177,14 +178,14 @@ def test_list_zones():
 
         export_file = Path("probe_tests/zones_config.json")
         zones_data = {
-            "customer_id": info.get('customer_id'),
+            "customer_id": info.get("customer_id"),
             "timestamp": datetime.now().isoformat(),
             "zones": zones,
             "recommendations": {
-                "web_unlocker_zone": unlocker_zones[0].get('name') if unlocker_zones else None,
-                "serp_zone": serp_zones[0].get('name') if serp_zones else None,
-                "browser_zone": browser_zones[0].get('name') if browser_zones else None,
-            }
+                "web_unlocker_zone": unlocker_zones[0].get("name") if unlocker_zones else None,
+                "serp_zone": serp_zones[0].get("name") if serp_zones else None,
+                "browser_zone": browser_zones[0].get("name") if browser_zones else None,
+            },
         }
 
         try:

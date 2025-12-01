@@ -28,7 +28,8 @@ from pathlib import Path
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
-    env_file = Path(__file__).parent.parent / '.env'
+
+    env_file = Path(__file__).parent.parent / ".env"
     if env_file.exists():
         load_dotenv(env_file)
 except ImportError:
@@ -67,7 +68,7 @@ async def async_client(api_token):
 
 class TestQuickStartAuthentication:
     """Test authentication examples from Quick Start section."""
-    
+
     def test_environment_variable_auth(self, api_token):
         """
         Test: README Quick Start - Authentication with environment variable.
@@ -75,10 +76,10 @@ class TestQuickStartAuthentication:
         """
         # From README: client = BrightDataClient()
         client = BrightDataClient()
-        
+
         assert client is not None, "Client initialization failed"
         assert client.token == api_token, "Token not loaded from environment"
-    
+
     def test_direct_credentials_auth(self):
         """
         Test: README Quick Start - Authentication with direct credentials.
@@ -87,22 +88,19 @@ class TestQuickStartAuthentication:
         token = os.getenv("BRIGHTDATA_API_TOKEN")
         if not token:
             pytest.skip("API token not found")
-        
+
         customer_id = os.getenv("BRIGHTDATA_CUSTOMER_ID")
-        
+
         # From README
-        client = BrightDataClient(
-            token=token,
-            customer_id=customer_id
-        )
-        
+        client = BrightDataClient(token=token, customer_id=customer_id)
+
         assert client is not None, "Client initialization failed"
         assert client.token == token, "Token not set correctly"
 
 
 class TestQuickStartSimpleScraping:
     """Test simple web scraping example from Quick Start."""
-    
+
     def test_simple_web_scraping(self, client):
         """
         Test: README Quick Start - Simple Web Scraping.
@@ -114,14 +112,14 @@ class TestQuickStartSimpleScraping:
         #     print(f"Success: {result.success}")
         #     print(f"Data: {result.data[:200]}...")
         #     print(f"Time: {result.elapsed_ms():.2f}ms")
-        
+
         result = client.scrape.generic.url("https://example.com")
-        
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-        assert hasattr(result, 'data'), "Result missing 'data' attribute"
-        assert hasattr(result, 'error'), "Result missing 'error' attribute"
-        
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+        assert hasattr(result, "data"), "Result missing 'data' attribute"
+        assert hasattr(result, "error"), "Result missing 'error' attribute"
+
         # Verify we can access the attributes as shown in README
         if result.success:
             assert result.data is not None, "data should not be None when success=True"
@@ -132,7 +130,7 @@ class TestQuickStartSimpleScraping:
 
 class TestDataclassPayloads:
     """Test dataclass payload examples from README."""
-    
+
     def test_amazon_payload_basic(self):
         """
         Test: README - Using Dataclass Payloads with Amazon.
@@ -144,20 +142,17 @@ class TestDataclassPayloads:
         #     reviews_count=50
         # )
         # print(f"ASIN: {payload.asin}")
-        
-        payload = AmazonProductPayload(
-            url="https://amazon.com/dp/B0CRMZHDG8",
-            reviews_count=50
-        )
-        
+
+        payload = AmazonProductPayload(url="https://amazon.com/dp/B0CRMZHDG8", reviews_count=50)
+
         # Verify helper property
         assert payload.asin == "B0CRMZHDG8", f"Expected ASIN 'B0CRMZHDG8', got '{payload.asin}'"
-        
+
         # Verify to_dict() method
         api_dict = payload.to_dict()
         assert isinstance(api_dict, dict), "to_dict() should return dict"
-        assert 'url' in api_dict, "to_dict() missing 'url' key"
-    
+        assert "url" in api_dict, "to_dict() missing 'url' key"
+
     def test_linkedin_job_payload(self):
         """
         Test: README - LinkedIn job search payload.
@@ -170,19 +165,17 @@ class TestDataclassPayloads:
         #     remote=True
         # )
         # print(f"Remote search: {job_payload.is_remote_search}")
-        
+
         job_payload = LinkedInJobSearchPayload(
-            keyword="python developer",
-            location="New York",
-            remote=True
+            keyword="python developer", location="New York", remote=True
         )
-        
+
         assert job_payload.is_remote_search is True, "is_remote_search should be True"
-        
+
         api_dict = job_payload.to_dict()
         assert isinstance(api_dict, dict), "to_dict() should return dict"
-        assert 'keyword' in api_dict, "to_dict() missing 'keyword'"
-    
+        assert "keyword" in api_dict, "to_dict() missing 'keyword'"
+
     def test_amazon_payload_detailed(self):
         """
         Test: README - Amazon payload with helper properties.
@@ -197,20 +190,18 @@ class TestDataclassPayloads:
         # print(payload.asin)        # "B123456789"
         # print(payload.domain)      # "amazon.com"
         # print(payload.is_secure)   # True
-        
+
         payload = AmazonProductPayload(
-            url="https://amazon.com/dp/B0CRMZHDG8",
-            reviews_count=50,
-            images_count=10
+            url="https://amazon.com/dp/B0CRMZHDG8", reviews_count=50, images_count=10
         )
-        
+
         assert payload.asin == "B0CRMZHDG8", "ASIN extraction failed"
         assert payload.domain == "amazon.com", "Domain extraction failed"
         assert payload.is_secure is True, "is_secure should be True for https"
-        
+
         api_dict = payload.to_dict()
-        assert 'url' in api_dict, "to_dict() missing 'url'"
-    
+        assert "url" in api_dict, "to_dict() missing 'url'"
+
     def test_linkedin_job_payload_detailed(self):
         """
         Test: README - LinkedIn payload with helper properties.
@@ -224,20 +215,17 @@ class TestDataclassPayloads:
         #     experienceLevel="mid"
         # )
         # print(payload.is_remote_search)  # True
-        
+
         payload = LinkedInJobSearchPayload(
-            keyword="python developer",
-            location="San Francisco",
-            remote=True,
-            experienceLevel="mid"
+            keyword="python developer", location="San Francisco", remote=True, experienceLevel="mid"
         )
-        
+
         assert payload.is_remote_search is True, "is_remote_search should be True"
-        
+
         api_dict = payload.to_dict()
-        assert api_dict['keyword'] == "python developer", "Keyword mismatch"
-        assert api_dict['remote'] is True, "Remote should be True"
-    
+        assert api_dict["keyword"] == "python developer", "Keyword mismatch"
+        assert api_dict["remote"] is True, "Remote should be True"
+
     def test_chatgpt_payload_defaults(self):
         """
         Test: README - ChatGPT payload with default values.
@@ -250,15 +238,12 @@ class TestDataclassPayloads:
         # )
         # print(payload.country)  # "US" (default)
         # print(payload.uses_web_search)  # True
-        
-        payload = ChatGPTPromptPayload(
-            prompt="Explain async programming",
-            web_search=True
-        )
-        
+
+        payload = ChatGPTPromptPayload(prompt="Explain async programming", web_search=True)
+
         assert payload.country == "US", "Default country should be 'US'"
         assert payload.uses_web_search is True, "uses_web_search should be True"
-    
+
     def test_payload_validation_invalid_url(self):
         """
         Test: README - Payload validation for invalid URL.
@@ -269,13 +254,13 @@ class TestDataclassPayloads:
         #     AmazonProductPayload(url="invalid-url")
         # except ValueError as e:
         #     print(e)  # "url must be valid HTTP/HTTPS URL"
-        
+
         with pytest.raises(ValueError) as exc_info:
             AmazonProductPayload(url="invalid-url")
-        
+
         error_msg = str(exc_info.value).lower()
         assert "url" in error_msg, f"Error should mention 'url', got: {error_msg}"
-    
+
     def test_payload_validation_negative_count(self):
         """
         Test: README - Payload validation for negative reviews_count.
@@ -289,21 +274,19 @@ class TestDataclassPayloads:
         #     )
         # except ValueError as e:
         #     print(e)  # "reviews_count must be non-negative"
-        
+
         with pytest.raises(ValueError) as exc_info:
-            AmazonProductPayload(
-                url="https://amazon.com/dp/B0CRMZHDG8",
-                reviews_count=-1
-            )
-        
+            AmazonProductPayload(url="https://amazon.com/dp/B0CRMZHDG8", reviews_count=-1)
+
         error_msg = str(exc_info.value).lower()
-        assert "reviews_count" in error_msg or "negative" in error_msg, \
-            f"Error should mention reviews_count or negative, got: {error_msg}"
+        assert (
+            "reviews_count" in error_msg or "negative" in error_msg
+        ), f"Error should mention reviews_count or negative, got: {error_msg}"
 
 
 class TestPlatformSpecificAmazon:
     """Test Amazon platform-specific examples from README."""
-    
+
     @pytest.mark.slow
     def test_amazon_product_scraping(self, client):
         """
@@ -315,16 +298,13 @@ class TestPlatformSpecificAmazon:
         #     url="https://amazon.com/dp/B0CRMZHDG8",
         #     timeout=65
         # )
-        
-        result = client.scrape.amazon.products(
-            url="https://amazon.com/dp/B0CRMZHDG8",
-            timeout=65
-        )
-        
+
+        result = client.scrape.amazon.products(url="https://amazon.com/dp/B0CRMZHDG8", timeout=65)
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-        assert hasattr(result, 'data'), "Result missing 'data' attribute"
-    
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+        assert hasattr(result, "data"), "Result missing 'data' attribute"
+
     @pytest.mark.slow
     def test_amazon_reviews_with_filters(self, client):
         """
@@ -338,17 +318,17 @@ class TestPlatformSpecificAmazon:
         #     keyWord="quality",
         #     numOfReviews=100
         # )
-        
+
         result = client.scrape.amazon.reviews(
             url="https://amazon.com/dp/B0CRMZHDG8",
             pastDays=30,
             keyWord="quality",
-            numOfReviews=10  # Reduced for faster testing
+            numOfReviews=10,  # Reduced for faster testing
         )
-        
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-    
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+
     @pytest.mark.slow
     def test_amazon_sellers(self, client):
         """
@@ -359,19 +339,17 @@ class TestPlatformSpecificAmazon:
         # result = client.scrape.amazon.sellers(
         #     url="https://amazon.com/sp?seller=AXXXXXXXXX"
         # )
-        
+
         # Using a real seller URL for testing
-        result = client.scrape.amazon.sellers(
-            url="https://amazon.com/sp?seller=A2L77EE7U53NWQ"
-        )
-        
+        result = client.scrape.amazon.sellers(url="https://amazon.com/sp?seller=A2L77EE7U53NWQ")
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
 
 
 class TestPlatformSpecificLinkedIn:
     """Test LinkedIn platform-specific examples from README."""
-    
+
     @pytest.mark.slow
     def test_linkedin_profile_scraping(self, client):
         """
@@ -382,14 +360,12 @@ class TestPlatformSpecificLinkedIn:
         # result = client.scrape.linkedin.profiles(
         #     url="https://linkedin.com/in/johndoe"
         # )
-        
-        result = client.scrape.linkedin.profiles(
-            url="https://linkedin.com/in/williamhgates"
-        )
-        
+
+        result = client.scrape.linkedin.profiles(url="https://linkedin.com/in/williamhgates")
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-    
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+
     @pytest.mark.slow
     def test_linkedin_jobs_scrape(self, client):
         """
@@ -400,15 +376,13 @@ class TestPlatformSpecificLinkedIn:
         # result = client.scrape.linkedin.jobs(
         #     url="https://linkedin.com/jobs/view/123456"
         # )
-        
+
         # Using a real job URL for testing
-        result = client.scrape.linkedin.jobs(
-            url="https://linkedin.com/jobs/view/3000000000"
-        )
-        
+        result = client.scrape.linkedin.jobs(url="https://linkedin.com/jobs/view/3000000000")
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-    
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+
     @pytest.mark.slow
     def test_linkedin_companies(self, client):
         """
@@ -419,14 +393,12 @@ class TestPlatformSpecificLinkedIn:
         # result = client.scrape.linkedin.companies(
         #     url="https://linkedin.com/company/microsoft"
         # )
-        
-        result = client.scrape.linkedin.companies(
-            url="https://linkedin.com/company/microsoft"
-        )
-        
+
+        result = client.scrape.linkedin.companies(url="https://linkedin.com/company/microsoft")
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-    
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+
     @pytest.mark.slow
     def test_linkedin_job_search(self, client):
         """
@@ -440,17 +412,14 @@ class TestPlatformSpecificLinkedIn:
         #     remote=True,
         #     experienceLevel="mid"
         # )
-        
+
         result = client.search.linkedin.jobs(
-            keyword="python developer",
-            location="New York",
-            remote=True,
-            experienceLevel="mid"
+            keyword="python developer", location="New York", remote=True, experienceLevel="mid"
         )
-        
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-    
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+
     @pytest.mark.slow
     def test_linkedin_profile_search(self, client):
         """
@@ -462,19 +431,16 @@ class TestPlatformSpecificLinkedIn:
         #     firstName="John",
         #     lastName="Doe"
         # )
-        
-        result = client.search.linkedin.profiles(
-            firstName="Bill",
-            lastName="Gates"
-        )
-        
+
+        result = client.search.linkedin.profiles(firstName="Bill", lastName="Gates")
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
 
 
 class TestPlatformSpecificChatGPT:
     """Test ChatGPT platform-specific examples from README."""
-    
+
     @pytest.mark.slow
     def test_chatgpt_single_prompt(self, client):
         """
@@ -487,16 +453,14 @@ class TestPlatformSpecificChatGPT:
         #     country="us",
         #     web_search=True
         # )
-        
+
         result = client.scrape.chatgpt.prompt(
-            prompt="Explain Python async programming",
-            country="us",
-            web_search=True
+            prompt="Explain Python async programming", country="us", web_search=True
         )
-        
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-    
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+
     @pytest.mark.slow
     def test_chatgpt_batch_prompts(self, client):
         """
@@ -508,19 +472,18 @@ class TestPlatformSpecificChatGPT:
         #     prompts=["What is Python?", "What is JavaScript?", "Compare them"],
         #     web_searches=[False, False, True]
         # )
-        
+
         result = client.scrape.chatgpt.prompts(
-            prompts=["What is Python?", "What is JavaScript?"],
-            web_searches=[False, False]
+            prompts=["What is Python?", "What is JavaScript?"], web_searches=[False, False]
         )
-        
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
 
 
 class TestPlatformSpecificFacebook:
     """Test Facebook platform-specific examples from README."""
-    
+
     @pytest.mark.slow
     def test_facebook_posts_by_profile(self, client):
         """
@@ -535,18 +498,18 @@ class TestPlatformSpecificFacebook:
         #     end_date="12-31-2024",
         #     timeout=240
         # )
-        
+
         result = client.scrape.facebook.posts_by_profile(
             url="https://facebook.com/zuck",
             num_of_posts=5,
             start_date="01-01-2024",
             end_date="12-31-2024",
-            timeout=240
+            timeout=240,
         )
-        
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-    
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+
     @pytest.mark.slow
     def test_facebook_posts_by_group(self, client):
         """
@@ -559,20 +522,18 @@ class TestPlatformSpecificFacebook:
         #     num_of_posts=20,
         #     timeout=240
         # )
-        
+
         result = client.scrape.facebook.posts_by_group(
-            url="https://facebook.com/groups/programming",
-            num_of_posts=5,
-            timeout=240
+            url="https://facebook.com/groups/programming", num_of_posts=5, timeout=240
         )
-        
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
 
 
 class TestPlatformSpecificInstagram:
     """Test Instagram platform-specific examples from README."""
-    
+
     @pytest.mark.slow
     def test_instagram_profile_scraping(self, client):
         """
@@ -584,15 +545,14 @@ class TestPlatformSpecificInstagram:
         #     url="https://instagram.com/username",
         #     timeout=240
         # )
-        
+
         result = client.scrape.instagram.profiles(
-            url="https://instagram.com/instagram",
-            timeout=240
+            url="https://instagram.com/instagram", timeout=240
         )
-        
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-    
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+
     @pytest.mark.slow
     def test_instagram_post_scraping(self, client):
         """
@@ -604,15 +564,14 @@ class TestPlatformSpecificInstagram:
         #     url="https://instagram.com/p/ABC123",
         #     timeout=240
         # )
-        
+
         result = client.scrape.instagram.posts(
-            url="https://instagram.com/p/C0000000000",
-            timeout=240
+            url="https://instagram.com/p/C0000000000", timeout=240
         )
-        
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-    
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+
     @pytest.mark.slow
     def test_instagram_post_discovery(self, client):
         """
@@ -628,23 +587,23 @@ class TestPlatformSpecificInstagram:
         #     post_type="reel",
         #     timeout=240
         # )
-        
+
         result = client.search.instagram.posts(
             url="https://instagram.com/instagram",
             num_of_posts=5,
             start_date="01-01-2024",
             end_date="12-31-2024",
             post_type="reel",
-            timeout=240
+            timeout=240,
         )
-        
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
 
 
 class TestSERPAPI:
     """Test SERP API examples from README."""
-    
+
     def test_google_search(self, client):
         """
         Test: README - Google search.
@@ -657,24 +616,21 @@ class TestSERPAPI:
         #     language="en",
         #     num_results=20
         # )
-        
+
         result = client.search.google(
-            query="python tutorial",
-            location="United States",
-            language="en",
-            num_results=10
+            query="python tutorial", location="United States", language="en", num_results=10
         )
-        
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-        assert hasattr(result, 'data'), "Result missing 'data' attribute"
-        
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+        assert hasattr(result, "data"), "Result missing 'data' attribute"
+
         # From README: for item in result.data:
         if result.success and result.data:
             for item in result.data[:3]:
                 # Items should have position, title, or url
                 assert isinstance(item, dict), "Search result items should be dicts"
-    
+
     def test_bing_search(self, client):
         """
         Test: README - Bing search.
@@ -685,15 +641,12 @@ class TestSERPAPI:
         #     query="python tutorial",
         #     location="United States"
         # )
-        
-        result = client.search.bing(
-            query="python tutorial",
-            location="United States"
-        )
-        
+
+        result = client.search.bing(query="python tutorial", location="United States")
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-    
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+
     def test_yandex_search(self, client):
         """
         Test: README - Yandex search.
@@ -704,19 +657,16 @@ class TestSERPAPI:
         #     query="python tutorial",
         #     location="Russia"
         # )
-        
-        result = client.search.yandex(
-            query="python tutorial",
-            location="Russia"
-        )
-        
+
+        result = client.search.yandex(query="python tutorial", location="Russia")
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
 
 
 class TestAsyncUsage:
     """Test async usage examples from README."""
-    
+
     @pytest.mark.asyncio
     async def test_async_multiple_urls(self, api_token):
         """
@@ -733,25 +683,23 @@ class TestAsyncUsage:
         #         ])
         #         for result in results:
         #             print(f"Success: {result.success}")
-        
+
         async with BrightDataClient(token=api_token) as client:
-            results = await client.scrape.generic.url_async([
-                "https://httpbin.org/html",
-                "https://example.com",
-                "https://httpbin.org/json"
-            ])
-            
+            results = await client.scrape.generic.url_async(
+                ["https://httpbin.org/html", "https://example.com", "https://httpbin.org/json"]
+            )
+
             assert results is not None, "Results is None"
             assert isinstance(results, list), "Results should be a list"
             assert len(results) == 3, f"Expected 3 results, got {len(results)}"
-            
+
             for result in results:
-                assert hasattr(result, 'success'), "Result missing 'success' attribute"
+                assert hasattr(result, "success"), "Result missing 'success' attribute"
 
 
 class TestConnectionTesting:
     """Test connection testing examples from README."""
-    
+
     @pytest.mark.asyncio
     async def test_async_connection_test(self, async_client):
         """
@@ -760,12 +708,12 @@ class TestConnectionTesting:
         """
         # From README:
         # is_valid = await client.test_connection()
-        
+
         is_valid = await async_client.test_connection()
-        
+
         assert isinstance(is_valid, bool), "test_connection should return bool"
         assert is_valid is True, "Connection test should succeed"
-    
+
     def test_sync_connection_test(self, client):
         """
         Test: README - Sync connection test.
@@ -773,12 +721,12 @@ class TestConnectionTesting:
         """
         # From README:
         # is_valid = client.test_connection_sync()
-        
+
         is_valid = client.test_connection_sync()
-        
+
         assert isinstance(is_valid, bool), "test_connection_sync should return bool"
         assert is_valid is True, "Sync connection test should succeed"
-    
+
     @pytest.mark.asyncio
     async def test_get_account_info_async(self, async_client):
         """
@@ -789,13 +737,13 @@ class TestConnectionTesting:
         # info = await client.get_account_info()
         # print(f"Zones: {info['zone_count']}")
         # print(f"Active zones: {[z['name'] for z in info['zones']]}")
-        
+
         info = await async_client.get_account_info()
-        
+
         assert isinstance(info, dict), "Account info should be dict"
-        assert 'zone_count' in info, "Account info missing 'zone_count'"
-        assert 'zones' in info, "Account info missing 'zones'"
-    
+        assert "zone_count" in info, "Account info missing 'zone_count'"
+        assert "zones" in info, "Account info missing 'zones'"
+
     def test_get_account_info_sync(self, client):
         """
         Test: README - Get account info sync.
@@ -803,17 +751,17 @@ class TestConnectionTesting:
         """
         # From README:
         # info = client.get_account_info_sync()
-        
+
         info = client.get_account_info_sync()
-        
+
         assert isinstance(info, dict), "Account info should be dict"
-        assert 'zone_count' in info, "Account info missing 'zone_count'"
-        assert 'zones' in info, "Account info missing 'zones'"
+        assert "zone_count" in info, "Account info missing 'zone_count'"
+        assert "zones" in info, "Account info missing 'zones'"
 
 
 class TestResultObjects:
     """Test result object examples from README."""
-    
+
     def test_result_object_attributes(self, client):
         """
         Test: README - Result object attributes and methods.
@@ -825,27 +773,27 @@ class TestResultObjects:
         # result.platform, result.method
         # result.elapsed_ms(), result.get_timing_breakdown()
         # result.to_dict(), result.to_json(indent=2)
-        
+
         result = client.scrape.generic.url("https://example.com")
-        
+
         # Verify all attributes
-        assert hasattr(result, 'success'), "Missing 'success' attribute"
-        assert hasattr(result, 'data'), "Missing 'data' attribute"
-        assert hasattr(result, 'error'), "Missing 'error' attribute"
-        assert hasattr(result, 'cost'), "Missing 'cost' attribute"
-        assert hasattr(result, 'platform'), "Missing 'platform' attribute"
-        assert hasattr(result, 'method'), "Missing 'method' attribute"
-        
+        assert hasattr(result, "success"), "Missing 'success' attribute"
+        assert hasattr(result, "data"), "Missing 'data' attribute"
+        assert hasattr(result, "error"), "Missing 'error' attribute"
+        assert hasattr(result, "cost"), "Missing 'cost' attribute"
+        assert hasattr(result, "platform"), "Missing 'platform' attribute"
+        assert hasattr(result, "method"), "Missing 'method' attribute"
+
         # Verify methods
         elapsed = result.elapsed_ms()
         assert isinstance(elapsed, (int, float)), "elapsed_ms() should return number"
-        
+
         timing = result.get_timing_breakdown()
         assert isinstance(timing, dict), "get_timing_breakdown() should return dict"
-        
+
         result_dict = result.to_dict()
         assert isinstance(result_dict, dict), "to_dict() should return dict"
-        
+
         result_json = result.to_json(indent=2)
         assert isinstance(result_json, str), "to_json() should return str"
         json.loads(result_json)  # Verify valid JSON
@@ -853,7 +801,7 @@ class TestResultObjects:
 
 class TestAdvancedUsage:
     """Test advanced usage examples from README."""
-    
+
     @pytest.mark.slow
     def test_sync_method_usage(self, client):
         """
@@ -865,15 +813,14 @@ class TestAdvancedUsage:
         #     url="https://linkedin.com/in/johndoe",
         #     timeout=300
         # )
-        
+
         result = client.scrape.linkedin.profiles(
-            url="https://linkedin.com/in/williamhgates",
-            timeout=300
+            url="https://linkedin.com/in/williamhgates", timeout=300
         )
-        
+
         assert result is not None, "Result is None"
-        assert hasattr(result, 'success'), "Result missing 'success' attribute"
-    
+        assert hasattr(result, "success"), "Result missing 'success' attribute"
+
     @pytest.mark.slow
     @pytest.mark.asyncio
     async def test_async_method_usage(self, api_token):
@@ -888,20 +835,19 @@ class TestAdvancedUsage:
         #             url="https://linkedin.com/in/johndoe",
         #             timeout=300
         #         )
-        
+
         async with BrightDataClient(token=api_token) as client:
             result = await client.scrape.linkedin.profiles_async(
-                url="https://linkedin.com/in/williamhgates",
-                timeout=300
+                url="https://linkedin.com/in/williamhgates", timeout=300
             )
-            
+
             assert result is not None, "Result is None"
-            assert hasattr(result, 'success'), "Result missing 'success' attribute"
+            assert hasattr(result, "success"), "Result missing 'success' attribute"
 
 
 class TestCompleteWorkflow:
     """Test the complete workflow example from README."""
-    
+
     @pytest.mark.slow
     def test_complete_workflow_example(self, api_token):
         """
@@ -915,47 +861,41 @@ class TestCompleteWorkflow:
         #     product = client.scrape.amazon.products(...)
         #     jobs = client.search.linkedin.jobs(...)
         #     search_results = client.search.google(...)
-        
+
         client = BrightDataClient(token=api_token)
-        
+
         # Test connection
         is_connected = client.test_connection_sync()
         assert is_connected is True, "Connection test failed"
-        
+
         # Get account info
         info = client.get_account_info_sync()
         assert isinstance(info, dict), "Account info should be dict"
-        assert 'zone_count' in info, "Account info missing 'zone_count'"
-        
+        assert "zone_count" in info, "Account info missing 'zone_count'"
+
         # Scrape Amazon product
-        product = client.scrape.amazon.products(
-            url="https://amazon.com/dp/B0CRMZHDG8"
-        )
+        product = client.scrape.amazon.products(url="https://amazon.com/dp/B0CRMZHDG8")
         assert product is not None, "Amazon product result is None"
-        assert hasattr(product, 'success'), "Product result missing 'success'"
-        
+        assert hasattr(product, "success"), "Product result missing 'success'"
+
         # Search LinkedIn jobs
         jobs = client.search.linkedin.jobs(
-            keyword="python developer",
-            location="San Francisco",
-            remote=True
+            keyword="python developer", location="San Francisco", remote=True
         )
         assert jobs is not None, "LinkedIn jobs result is None"
-        assert hasattr(jobs, 'success'), "Jobs result missing 'success'"
-        
+        assert hasattr(jobs, "success"), "Jobs result missing 'success'"
+
         # Search Google
         search_results = client.search.google(
-            query="python async tutorial",
-            location="United States",
-            num_results=5
+            query="python async tutorial", location="United States", num_results=5
         )
         assert search_results is not None, "Google search result is None"
-        assert hasattr(search_results, 'success'), "Search result missing 'success'"
+        assert hasattr(search_results, "success"), "Search result missing 'success'"
 
 
 class TestCLIExamples:
     """Test CLI usage examples from README."""
-    
+
     def test_cli_help_command(self):
         """
         Test: README - CLI help command.
@@ -963,18 +903,16 @@ class TestCLIExamples:
         """
         # From README:
         # brightdata --help
-        
+
         result = subprocess.run(
-            ["brightdata", "--help"],
-            capture_output=True,
-            text=True,
-            timeout=10
+            ["brightdata", "--help"], capture_output=True, text=True, timeout=10
         )
-        
+
         assert result.returncode == 0, f"CLI help command failed with code {result.returncode}"
-        assert "brightdata" in result.stdout.lower() or "help" in result.stdout.lower(), \
-            "Help output should contain expected text"
-    
+        assert (
+            "brightdata" in result.stdout.lower() or "help" in result.stdout.lower()
+        ), "Help output should contain expected text"
+
     @pytest.mark.slow
     def test_cli_scrape_amazon_products(self, api_token):
         """
@@ -984,25 +922,24 @@ class TestCLIExamples:
         # From README:
         # brightdata scrape amazon products \
         #   "https://amazon.com/dp/B0CRMZHDG8"
-        
+
         env = os.environ.copy()
-        env['BRIGHTDATA_API_TOKEN'] = api_token
-        
+        env["BRIGHTDATA_API_TOKEN"] = api_token
+
         result = subprocess.run(
-            [
-                "brightdata", "scrape", "amazon", "products",
-                "https://amazon.com/dp/B0CRMZHDG8"
-            ],
+            ["brightdata", "scrape", "amazon", "products", "https://amazon.com/dp/B0CRMZHDG8"],
             capture_output=True,
             text=True,
             timeout=120,
-            env=env
+            env=env,
         )
-        
+
         # CLI should execute without error (exit code 0 or 1)
-        assert result.returncode in [0, 1], \
-            f"CLI command failed with unexpected code {result.returncode}: {result.stderr}"
-    
+        assert result.returncode in [
+            0,
+            1,
+        ], f"CLI command failed with unexpected code {result.returncode}: {result.stderr}"
+
     @pytest.mark.slow
     def test_cli_search_linkedin_jobs(self, api_token):
         """
@@ -1015,27 +952,34 @@ class TestCLIExamples:
         #   --location "New York" \
         #   --remote \
         #   --output-file jobs.json
-        
+
         env = os.environ.copy()
-        env['BRIGHTDATA_API_TOKEN'] = api_token
-        
+        env["BRIGHTDATA_API_TOKEN"] = api_token
+
         result = subprocess.run(
             [
-                "brightdata", "search", "linkedin", "jobs",
-                "--keyword", "python developer",
-                "--location", "New York",
-                "--remote"
+                "brightdata",
+                "search",
+                "linkedin",
+                "jobs",
+                "--keyword",
+                "python developer",
+                "--location",
+                "New York",
+                "--remote",
             ],
             capture_output=True,
             text=True,
             timeout=120,
-            env=env
+            env=env,
         )
-        
+
         # CLI should execute without error
-        assert result.returncode in [0, 1], \
-            f"CLI command failed with unexpected code {result.returncode}: {result.stderr}"
-    
+        assert result.returncode in [
+            0,
+            1,
+        ], f"CLI command failed with unexpected code {result.returncode}: {result.stderr}"
+
     def test_cli_search_google(self, api_token):
         """
         Test: README - CLI search Google command.
@@ -1045,26 +989,24 @@ class TestCLIExamples:
         # brightdata search google \
         #   "python tutorial" \
         #   --location "United States"
-        
+
         env = os.environ.copy()
-        env['BRIGHTDATA_API_TOKEN'] = api_token
-        
+        env["BRIGHTDATA_API_TOKEN"] = api_token
+
         result = subprocess.run(
-            [
-                "brightdata", "search", "google",
-                "python tutorial",
-                "--location", "United States"
-            ],
+            ["brightdata", "search", "google", "python tutorial", "--location", "United States"],
             capture_output=True,
             text=True,
             timeout=60,
-            env=env
+            env=env,
         )
-        
+
         # CLI should execute without error
-        assert result.returncode in [0, 1], \
-            f"CLI command failed with unexpected code {result.returncode}: {result.stderr}"
-    
+        assert result.returncode in [
+            0,
+            1,
+        ], f"CLI command failed with unexpected code {result.returncode}: {result.stderr}"
+
     def test_cli_scrape_generic(self, api_token):
         """
         Test: README - CLI generic web scraping command.
@@ -1074,28 +1016,32 @@ class TestCLIExamples:
         # brightdata scrape generic \
         #   "https://example.com" \
         #   --response-format pretty
-        
+
         env = os.environ.copy()
-        env['BRIGHTDATA_API_TOKEN'] = api_token
-        
+        env["BRIGHTDATA_API_TOKEN"] = api_token
+
         result = subprocess.run(
             [
-                "brightdata", "scrape", "generic",
+                "brightdata",
+                "scrape",
+                "generic",
                 "https://example.com",
-                "--response-format", "pretty"
+                "--response-format",
+                "pretty",
             ],
             capture_output=True,
             text=True,
             timeout=60,
-            env=env
+            env=env,
         )
-        
+
         # CLI should execute without error
-        assert result.returncode in [0, 1], \
-            f"CLI command failed with unexpected code {result.returncode}: {result.stderr}"
+        assert result.returncode in [
+            0,
+            1,
+        ], f"CLI command failed with unexpected code {result.returncode}: {result.stderr}"
 
 
 if __name__ == "__main__":
     """Run tests with pytest."""
     pytest.main([__file__, "-v", "--tb=short"])
-

@@ -31,8 +31,7 @@ async def test_instagram_profiles():
 
             try:
                 result = await scraper.profiles_async(
-                    url="https://www.instagram.com/instagram",
-                    timeout=180
+                    url="https://www.instagram.com/instagram", timeout=180
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -59,6 +58,7 @@ async def test_instagram_profiles():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 
@@ -79,8 +79,7 @@ async def test_instagram_posts():
 
             try:
                 result = await scraper.posts_async(
-                    url="https://www.instagram.com/p/C9z9z9z9z9z",
-                    timeout=180
+                    url="https://www.instagram.com/p/C9z9z9z9z9z", timeout=180
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -105,6 +104,7 @@ async def test_instagram_posts():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 
@@ -125,8 +125,7 @@ async def test_instagram_reels():
 
             try:
                 result = await scraper.reels_async(
-                    url="https://www.instagram.com/reel/ABC123",
-                    timeout=180
+                    url="https://www.instagram.com/reel/ABC123", timeout=180
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -151,6 +150,7 @@ async def test_instagram_reels():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 
@@ -171,9 +171,7 @@ async def test_instagram_search_posts():
 
             try:
                 result = await scraper.posts_async(
-                    url="https://www.instagram.com/instagram",
-                    num_of_posts=10,
-                    timeout=180
+                    url="https://www.instagram.com/instagram", num_of_posts=10, timeout=180
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -199,6 +197,7 @@ async def test_instagram_search_posts():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 

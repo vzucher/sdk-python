@@ -15,18 +15,14 @@ from .utils import handle_error
 
 @click.group(invoke_without_command=True)
 @click.version_option(version="2.0.0", prog_name="brightdata")
-@click.option(
-    "--banner/--no-banner",
-    default=True,
-    help="Show/hide banner on startup"
-)
+@click.option("--banner/--no-banner", default=True, help="Show/hide banner on startup")
 @click.pass_context
 def cli(ctx: click.Context, banner: bool) -> None:
     """
     Bright Data CLI - Command-line interface for Bright Data SDK.
-    
+
     Provides easy access to all search and scrape tools.
-    
+
     All commands require an API key. You can provide it via:
     - --api-key flag
     - BRIGHTDATA_API_TOKEN environment variable
@@ -35,11 +31,12 @@ def cli(ctx: click.Context, banner: bool) -> None:
     ctx.ensure_object(dict)
     # Store context for subcommands
     ctx.obj["api_key"] = None
-    
+
     # Show banner when invoked without subcommand and not --help/--version
     if ctx.invoked_subcommand is None and banner:
         # Check if help or version was requested
         import sys
+
         if "--help" not in sys.argv and "--version" not in sys.argv:
             print_banner()
             click.echo()
@@ -66,4 +63,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

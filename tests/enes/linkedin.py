@@ -31,8 +31,7 @@ async def test_linkedin_profiles():
 
             try:
                 result = await scraper.profiles_async(
-                    url="https://www.linkedin.com/in/williamhgates",
-                    timeout=180
+                    url="https://www.linkedin.com/in/williamhgates", timeout=180
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -57,6 +56,7 @@ async def test_linkedin_profiles():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 
@@ -77,8 +77,7 @@ async def test_linkedin_companies():
 
             try:
                 result = await scraper.companies_async(
-                    url="https://www.linkedin.com/company/microsoft",
-                    timeout=180
+                    url="https://www.linkedin.com/company/microsoft", timeout=180
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -103,6 +102,7 @@ async def test_linkedin_companies():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 
@@ -123,8 +123,7 @@ async def test_linkedin_jobs():
 
             try:
                 result = await scraper.jobs_async(
-                    url="https://www.linkedin.com/jobs/view/3787241244",
-                    timeout=180
+                    url="https://www.linkedin.com/jobs/view/3787241244", timeout=180
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -149,6 +148,7 @@ async def test_linkedin_jobs():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 
@@ -169,9 +169,7 @@ async def test_linkedin_search_jobs():
 
             try:
                 result = await scraper.jobs_async(
-                    keyword="python developer",
-                    location="New York",
-                    timeout=180
+                    keyword="python developer", location="New York", timeout=180
                 )
 
                 print(f"\n✅ API call succeeded")
@@ -180,7 +178,9 @@ async def test_linkedin_search_jobs():
                 print(f"\n📊 Result analysis:")
                 print(f"   - result.success: {result.success}")
                 print(f"   - result.data type: {type(result.data)}")
-                print(f"   - result.status: {result.status if hasattr(result, 'status') else 'N/A'}")
+                print(
+                    f"   - result.status: {result.status if hasattr(result, 'status') else 'N/A'}"
+                )
                 print(f"   - result.error: {result.error if hasattr(result, 'error') else 'N/A'}")
 
                 if result.data:
@@ -199,6 +199,7 @@ async def test_linkedin_search_jobs():
             except Exception as e:
                 print(f"\n❌ Error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
 
