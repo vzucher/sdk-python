@@ -32,14 +32,14 @@ async def get_metadata(dataset_id: str, name: str):
                     print(f"\n✅ Got metadata!")
 
                     # Display input schema
-                    if 'input_schema' in data:
+                    if "input_schema" in data:
                         print(f"\n📋 INPUT SCHEMA:")
-                        print(json.dumps(data['input_schema'], indent=2))
+                        print(json.dumps(data["input_schema"], indent=2))
 
                     # Display other useful info
-                    if 'name' in data:
+                    if "name" in data:
                         print(f"\nName: {data['name']}")
-                    if 'description' in data:
+                    if "description" in data:
                         print(f"Description: {data['description'][:200]}...")
 
                 else:

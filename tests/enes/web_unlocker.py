@@ -34,8 +34,7 @@ async def test_web_unlocker_single_url():
 
         try:
             result = await client.scrape.generic.url_async(
-                url="https://httpbin.org/html",
-                response_format="raw"
+                url="https://httpbin.org/html", response_format="raw"
             )
 
             print(f"\n✅ API call succeeded")
@@ -69,6 +68,7 @@ async def test_web_unlocker_single_url():
         except Exception as e:
             print(f"\n❌ Error: {e}")
             import traceback
+
             traceback.print_exc()
 
 
@@ -87,8 +87,7 @@ async def test_web_unlocker_json_format():
 
         try:
             result = await client.scrape.generic.url_async(
-                url="https://httpbin.org/json",
-                response_format="json"
+                url="https://httpbin.org/json", response_format="json"
             )
 
             print(f"\n✅ API call succeeded")
@@ -121,6 +120,7 @@ async def test_web_unlocker_json_format():
         except Exception as e:
             print(f"\n❌ Error: {e}")
             import traceback
+
             traceback.print_exc()
 
 
@@ -135,18 +135,11 @@ async def test_web_unlocker_multiple_urls():
 
     async with client.engine:
         print("\n🌐 Testing Web Unlocker with multiple URLs...")
-        urls = [
-            "https://httpbin.org/html",
-            "https://httpbin.org/delay/1",
-            "https://example.com"
-        ]
+        urls = ["https://httpbin.org/html", "https://httpbin.org/delay/1", "https://example.com"]
         print(f"📋 URLs: {len(urls)} URLs")
 
         try:
-            results = await client.scrape.generic.url_async(
-                url=urls,
-                response_format="raw"
-            )
+            results = await client.scrape.generic.url_async(url=urls, response_format="raw")
 
             print(f"\n✅ API call succeeded")
             print(f"📊 Got {len(results)} results")
@@ -171,7 +164,7 @@ async def test_web_unlocker_multiple_urls():
                 else:
                     print(f"   - Error: {result.error if hasattr(result, 'error') else 'N/A'}")
 
-                if hasattr(result, 'elapsed_ms') and result.elapsed_ms():
+                if hasattr(result, "elapsed_ms") and result.elapsed_ms():
                     print(f"   - Elapsed: {result.elapsed_ms():.2f}ms")
 
             return results
@@ -179,6 +172,7 @@ async def test_web_unlocker_multiple_urls():
         except Exception as e:
             print(f"\n❌ Error: {e}")
             import traceback
+
             traceback.print_exc()
 
 
@@ -198,9 +192,7 @@ async def test_web_unlocker_with_country():
 
         try:
             result = await client.scrape.generic.url_async(
-                url="https://httpbin.org/headers",
-                country="us",
-                response_format="raw"
+                url="https://httpbin.org/headers", country="us", response_format="raw"
             )
 
             print(f"\n✅ API call succeeded")
@@ -230,6 +222,7 @@ async def test_web_unlocker_with_country():
         except Exception as e:
             print(f"\n❌ Error: {e}")
             import traceback
+
             traceback.print_exc()
 
 

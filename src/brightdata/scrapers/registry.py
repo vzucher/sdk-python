@@ -27,33 +27,35 @@ _SCRAPER_REGISTRY: Dict[str, Type] = {}
 def register(domain: str):
     """
     Decorator to register a scraper for a domain.
-    
+
     Scrapers register themselves using this decorator, enabling
     auto-discovery and intelligent routing.
-    
+
     Args:
         domain: Second-level domain (e.g., "amazon", "linkedin", "instagram")
-    
+
     Returns:
         Decorator function that registers the class
-    
+
     Example:
         >>> @register("amazon")
         >>> class AmazonScraper(BaseWebScraper):
         ...     DATASET_ID = "gd_l7q7dkf244hwxbl93"
         ...     PLATFORM_NAME = "Amazon"
-        ...     
+        ...
         ...     async def products_async(self, keyword: str):
         ...         # Search implementation
         ...         pass
-        >>> 
+        >>>
         >>> # Later, auto-discovery works:
         >>> scraper_class = get_scraper_for("https://www.amazon.com/dp/B123")
         >>> # Returns AmazonScraper class
     """
+
     def decorator(cls: Type) -> Type:
         _SCRAPER_REGISTRY[domain.lower()] = cls
         return cls
+
     return decorator
 
 
@@ -61,21 +63,21 @@ def register(domain: str):
 def _import_all_scrapers():
     """
     Import all scraper modules to trigger @register decorators.
-    
+
     This function runs exactly once (cached) and imports all scraper
     modules in the scrapers package, which causes their @register
     decorators to execute and populate the registry.
-    
+
     Note:
         Uses pkgutil.walk_packages to discover all modules recursively.
         Only imports modules ending with '.scraper' or containing '.scraper.'
         to avoid unnecessary imports.
     """
     import brightdata.scrapers as pkg
-    
+
     for mod_info in pkgutil.walk_packages(pkg.__path__, pkg.__name__ + "."):
         module_name = mod_info.name
-        
+
         # Only import scraper modules (optimization)
         if module_name.endswith(".scraper") or ".scraper." in module_name:
             try:
@@ -89,24 +91,23 @@ def _import_all_scrapers():
             except Exception as e:
                 # Log unexpected errors but continue to avoid breaking registry
                 logger.error(
-                    f"Unexpected error importing scraper module '{module_name}': {e}",
-                    exc_info=True
+                    f"Unexpected error importing scraper module '{module_name}': {e}", exc_info=True
                 )
 
 
 def get_scraper_for(url: str) -> Optional[Type]:
     """
     Get scraper class for a URL based on domain.
-    
+
     Auto-discovers and returns the appropriate scraper class for the
     given URL's domain. Returns None if no scraper registered for domain.
-    
+
     Args:
         url: URL to find scraper for (e.g., "https://www.amazon.com/dp/B123")
-    
+
     Returns:
         Scraper class if found, None otherwise
-    
+
     Example:
         >>> # Get scraper for Amazon URL
         >>> ScraperClass = get_scraper_for("https://amazon.com/dp/B123")
@@ -115,7 +116,7 @@ def get_scraper_for(url: str) -> Optional[Type]:
         ...     result = scraper.scrape("https://amazon.com/dp/B123")
         >>> else:
         ...     print("No specialized scraper for this domain")
-    
+
     Note:
         This enables future intelligent routing:
         - Auto-detect platform from URL
@@ -124,11 +125,11 @@ def get_scraper_for(url: str) -> Optional[Type]:
     """
     # Ensure all scrapers are imported and registered
     _import_all_scrapers()
-    
+
     # Extract domain from URL
     extracted = tldextract.extract(url)
     domain = extracted.domain.lower()  # e.g., "amazon", "linkedin"
-    
+
     # Look up in registry
     return _SCRAPER_REGISTRY.get(domain)
 
@@ -136,10 +137,10 @@ def get_scraper_for(url: str) -> Optional[Type]:
 def get_registered_platforms() -> List[str]:
     """
     Get list of all registered platform domains.
-    
+
     Returns:
         List of registered domain names
-    
+
     Example:
         >>> platforms = get_registered_platforms()
         >>> print(platforms)
@@ -152,13 +153,13 @@ def get_registered_platforms() -> List[str]:
 def is_platform_supported(url: str) -> bool:
     """
     Check if URL's platform has a registered scraper.
-    
+
     Args:
         url: URL to check
-    
+
     Returns:
         True if platform has registered scraper, False otherwise
-    
+
     Example:
         >>> is_platform_supported("https://amazon.com/dp/B123")
         True
@@ -172,10 +173,10 @@ def is_platform_supported(url: str) -> bool:
 def get_registry() -> Dict[str, Type]:
     """
     Get the complete scraper registry.
-    
+
     Returns:
         Dictionary mapping domain → scraper class
-    
+
     Note:
         This is mainly for debugging and testing. Use get_scraper_for()
         for normal operation.

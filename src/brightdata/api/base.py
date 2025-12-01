@@ -9,34 +9,34 @@ from ..core.engine import AsyncEngine
 class BaseAPI(ABC):
     """
     Base class for all API implementations.
-    
+
     Provides common structure and async/sync wrapper pattern
     for all API service classes.
     """
-    
+
     def __init__(self, engine: AsyncEngine):
         """
         Initialize base API.
-        
+
         Args:
             engine: AsyncEngine instance for HTTP operations.
         """
         self.engine = engine
-    
+
     @abstractmethod
     async def _execute_async(self, *args: Any, **kwargs: Any) -> Any:
         """
         Execute API operation asynchronously.
-        
+
         This method should be implemented by subclasses to perform
         the actual async API operation.
         """
         pass
-    
+
     def _execute_sync(self, *args: Any, **kwargs: Any) -> Any:
         """
         Execute API operation synchronously.
-        
+
         Wraps async method using asyncio.run() for sync compatibility.
         """
         try:

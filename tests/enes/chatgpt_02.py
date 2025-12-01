@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from brightdata import BrightDataClient
 
+
 async def test_chatgpt():
     """Test ChatGPT functionality."""
 
@@ -38,11 +39,7 @@ async def test_chatgpt():
             print(f"   Country: US (default)")
 
             scraper = client.scrape.chatgpt
-            result = await scraper.prompt_async(
-                prompt=prompt,
-                web_search=False,
-                poll_timeout=60
-            )
+            result = await scraper.prompt_async(prompt=prompt, web_search=False, poll_timeout=60)
 
             if result.success:
                 print(f"   ✅ Prompt successful!")
@@ -76,10 +73,7 @@ async def test_chatgpt():
             print(f"   Country: US")
 
             result = await scraper.prompt_async(
-                prompt=prompt,
-                country="us",
-                web_search=True,
-                poll_timeout=90
+                prompt=prompt, country="us", web_search=True, poll_timeout=90
             )
 
             if result.success:
@@ -99,10 +93,7 @@ async def test_chatgpt():
         # Test 3: Batch prompts
         print("\n3. Testing batch prompts...")
         try:
-            prompts = [
-                "What is Python in one sentence?",
-                "What is JavaScript in one sentence?"
-            ]
+            prompts = ["What is Python in one sentence?", "What is JavaScript in one sentence?"]
             print(f"   Prompts: {prompts}")
             print(f"   Countries: ['us', 'us']")
 
@@ -110,7 +101,7 @@ async def test_chatgpt():
                 prompts=prompts,
                 countries=["us", "us"],
                 web_searches=[False, False],
-                poll_timeout=120
+                poll_timeout=120,
             )
 
             if result.success:
@@ -138,10 +129,7 @@ async def test_chatgpt():
             print(f"   Follow-up: '{follow_up}'")
 
             result = await scraper.prompt_async(
-                prompt=prompt,
-                additional_prompt=follow_up,
-                web_search=False,
-                poll_timeout=90
+                prompt=prompt, additional_prompt=follow_up, web_search=False, poll_timeout=90
             )
 
             if result.success:
@@ -230,7 +218,8 @@ async def test_chatgpt():
     print("\n" + "=" * 60)
     print("SUMMARY:")
     print("-" * 40)
-    print(f"""
+    print(
+        f"""
 ChatGPT Scraper Configuration:
 - Dataset ID: gd_m7aof0k82r803d5bjm
 - Platform: chatgpt
@@ -248,7 +237,9 @@ If getting errors:
 1. Check API token is valid
 2. Verify account has ChatGPT access enabled
 3. Check account balance for ChatGPT operations
-""")
+"""
+    )
+
 
 if __name__ == "__main__":
     asyncio.run(test_chatgpt())

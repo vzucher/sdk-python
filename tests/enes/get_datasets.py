@@ -41,18 +41,15 @@ async def get_datasets():
                         # Group by platform
                         platforms = {}
                         for dataset in data:
-                            name = dataset.get('name', 'unknown')
-                            dataset_id = dataset.get('id', 'unknown')
+                            name = dataset.get("name", "unknown")
+                            dataset_id = dataset.get("id", "unknown")
 
                             # Extract platform from name
-                            platform = name.split('_')[0] if '_' in name else name
+                            platform = name.split("_")[0] if "_" in name else name
 
                             if platform not in platforms:
                                 platforms[platform] = []
-                            platforms[platform].append({
-                                'name': name,
-                                'id': dataset_id
-                            })
+                            platforms[platform].append({"name": name, "id": dataset_id})
 
                         # Display grouped results
                         for platform, datasets in sorted(platforms.items()):
@@ -63,6 +60,7 @@ async def get_datasets():
                     elif isinstance(data, dict):
                         print(f"\n📦 Response data:")
                         import json
+
                         print(json.dumps(data, indent=2))
 
                     else:
@@ -77,6 +75,7 @@ async def get_datasets():
         except Exception as e:
             print(f"\n❌ Error: {e}")
             import traceback
+
             traceback.print_exc()
 
 

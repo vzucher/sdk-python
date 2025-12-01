@@ -8,7 +8,7 @@ from ...utils.location import LocationService, LocationFormat
 
 class BaseURLBuilder(ABC):
     """Base class for search engine URL builders."""
-    
+
     @abstractmethod
     def build(
         self,
@@ -17,7 +17,7 @@ class BaseURLBuilder(ABC):
         language: str = "en",
         device: str = "desktop",
         num_results: int = 10,
-        **kwargs
+        **kwargs,
     ) -> str:
         """Build search URL."""
         pass
@@ -25,7 +25,7 @@ class BaseURLBuilder(ABC):
 
 class GoogleURLBuilder(BaseURLBuilder):
     """URL builder for Google search."""
-    
+
     def build(
         self,
         query: str,
@@ -33,7 +33,7 @@ class GoogleURLBuilder(BaseURLBuilder):
         language: str = "en",
         device: str = "desktop",
         num_results: int = 10,
-        **kwargs
+        **kwargs,
     ) -> str:
         """Build Google search URL with Bright Data parsing enabled."""
         encoded_query = quote_plus(query)
@@ -47,9 +47,7 @@ class GoogleURLBuilder(BaseURLBuilder):
             url += f"&hl={language}"
 
         if location:
-            location_code = LocationService.parse_location(
-                location, LocationFormat.GOOGLE
-            )
+            location_code = LocationService.parse_location(location, LocationFormat.GOOGLE)
             if location_code:
                 url += f"&gl={location_code}"
 
@@ -67,7 +65,7 @@ class GoogleURLBuilder(BaseURLBuilder):
 
 class BingURLBuilder(BaseURLBuilder):
     """URL builder for Bing search."""
-    
+
     def build(
         self,
         query: str,
@@ -75,26 +73,24 @@ class BingURLBuilder(BaseURLBuilder):
         language: str = "en",
         device: str = "desktop",
         num_results: int = 10,
-        **kwargs
+        **kwargs,
     ) -> str:
         """Build Bing search URL."""
         encoded_query = quote_plus(query)
         url = f"https://www.bing.com/search?q={encoded_query}"
         url += f"&count={num_results}"
-        
+
         if location:
-            location_code = LocationService.parse_location(
-                location, LocationFormat.BING
-            )
+            location_code = LocationService.parse_location(location, LocationFormat.BING)
             market = f"{language}_{location_code}"
             url += f"&mkt={market}"
-        
+
         return url
 
 
 class YandexURLBuilder(BaseURLBuilder):
     """URL builder for Yandex search."""
-    
+
     def build(
         self,
         query: str,
@@ -102,18 +98,15 @@ class YandexURLBuilder(BaseURLBuilder):
         language: str = "en",
         device: str = "desktop",
         num_results: int = 10,
-        **kwargs
+        **kwargs,
     ) -> str:
         """Build Yandex search URL."""
         encoded_query = quote_plus(query)
         url = f"https://yandex.com/search/?text={encoded_query}"
         url += f"&numdoc={num_results}"
-        
-        if location:
-            region_code = LocationService.parse_location(
-                location, LocationFormat.YANDEX
-            )
-            url += f"&lr={region_code}"
-        
-        return url
 
+        if location:
+            region_code = LocationService.parse_location(location, LocationFormat.YANDEX)
+            url += f"&lr={region_code}"
+
+        return url

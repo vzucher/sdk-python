@@ -22,35 +22,35 @@ async def test_new_amazon_search_api():
     print("\n" + "=" * 80)
     print("TESTING: NEW client.search.amazon API")
     print("=" * 80)
-    
+
     client = BrightDataClient()
-    
+
     # Check if search.amazon exists
-    if not hasattr(client.search, 'amazon'):
+    if not hasattr(client.search, "amazon"):
         print("\n❌ client.search.amazon NOT FOUND!")
         print("   The new Amazon search feature is not available")
         return False
-    
+
     print("✅ client.search.amazon found!")
-    
+
     test_results = []
-    
+
     # Test 1: Basic keyword search
     print("\n" + "-" * 80)
     print("1️⃣ TEST: Basic Keyword Search")
     print("-" * 80)
     print("   Method: client.search.amazon.products(keyword='laptop')")
-    
+
     try:
         async with client.engine:
             result = await client.search.amazon.products_async(keyword="laptop")
-        
+
         print(f"   ✅ API call succeeded")
         print(f"   Success: {result.success}")
         print(f"   Status: {result.status}")
-        
+
         if result.success:
-            if isinstance(result.data, dict) and 'error' in result.data:
+            if isinstance(result.data, dict) and "error" in result.data:
                 print(f"   ⚠️  Crawler blocked by Amazon: {result.data['error']}")
                 print(f"   (This is expected - Amazon blocks search pages)")
                 test_results.append(True)  # API worked, Amazon blocked
@@ -63,11 +63,11 @@ async def test_new_amazon_search_api():
         else:
             print(f"   ❌ Search failed: {result.error}")
             test_results.append(False)
-            
+
     except Exception as e:
         print(f"   ❌ Exception: {str(e)}")
         test_results.append(False)
-    
+
     # Test 2: Search with price filters
     print("\n" + "-" * 80)
     print("2️⃣ TEST: Keyword + Price Filters")
@@ -77,20 +77,18 @@ async def test_new_amazon_search_api():
     print("       min_price=5000,  # $50")
     print("       max_price=20000  # $200")
     print("   )")
-    
+
     try:
         async with client.engine:
             result = await client.search.amazon.products_async(
-                keyword="headphones",
-                min_price=5000,
-                max_price=20000
+                keyword="headphones", min_price=5000, max_price=20000
             )
-        
+
         print(f"   ✅ API call succeeded")
         print(f"   Success: {result.success}")
-        
+
         if result.success:
-            if isinstance(result.data, dict) and 'error' in result.data:
+            if isinstance(result.data, dict) and "error" in result.data:
                 print(f"   ⚠️  Crawler blocked by Amazon")
                 test_results.append(True)
             elif isinstance(result.data, list):
@@ -101,11 +99,11 @@ async def test_new_amazon_search_api():
         else:
             print(f"   ❌ Search failed: {result.error}")
             test_results.append(False)
-            
+
     except Exception as e:
         print(f"   ❌ Exception: {str(e)}")
         test_results.append(False)
-    
+
     # Test 3: Prime eligible filter
     print("\n" + "-" * 80)
     print("3️⃣ TEST: Prime Eligible Filter")
@@ -114,19 +112,18 @@ async def test_new_amazon_search_api():
     print("       keyword='phone charger',")
     print("       prime_eligible=True")
     print("   )")
-    
+
     try:
         async with client.engine:
             result = await client.search.amazon.products_async(
-                keyword="phone charger",
-                prime_eligible=True
+                keyword="phone charger", prime_eligible=True
             )
-        
+
         print(f"   ✅ API call succeeded")
         print(f"   Success: {result.success}")
-        
+
         if result.success:
-            if isinstance(result.data, dict) and 'error' in result.data:
+            if isinstance(result.data, dict) and "error" in result.data:
                 print(f"   ⚠️  Crawler blocked by Amazon")
                 test_results.append(True)
             elif isinstance(result.data, list):
@@ -137,21 +134,21 @@ async def test_new_amazon_search_api():
         else:
             print(f"   ❌ Search failed: {result.error}")
             test_results.append(False)
-            
+
     except Exception as e:
         print(f"   ❌ Exception: {str(e)}")
         test_results.append(False)
-    
+
     # Final summary
     print("\n" + "=" * 80)
     print("TEST RESULTS SUMMARY")
     print("=" * 80)
-    
+
     passed = sum(test_results)
     total = len(test_results)
-    
+
     print(f"   Passed: {passed}/{total}")
-    
+
     if passed == total:
         print("\n✅ ALL TESTS PASSED!")
         print("\n📊 Analysis:")
@@ -170,4 +167,3 @@ async def test_new_amazon_search_api():
 
 if __name__ == "__main__":
     asyncio.run(test_new_amazon_search_api())
-

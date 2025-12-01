@@ -22,10 +22,10 @@ from ..workflow import WorkflowExecutor
 class AmazonSearchScraper:
     """
     Amazon Search Scraper for parameter-based discovery.
-    
+
     Provides discovery methods that search Amazon by parameters
     rather than extracting from specific URLs.
-    
+
     Example:
         >>> scraper = AmazonSearchScraper(bearer_token="token")
         >>> result = scraper.products(
@@ -34,14 +34,14 @@ class AmazonSearchScraper:
         ...     max_price=2000
         ... )
     """
-    
+
     # Amazon dataset IDs
     DATASET_ID_PRODUCTS_SEARCH = "gd_l7q7dkf244hwjntr0"  # Amazon Products with search
-    
+
     def __init__(self, bearer_token: str, engine: Optional[AsyncEngine] = None):
         """
         Initialize Amazon search scraper.
-        
+
         Args:
             bearer_token: Bright Data API token
             engine: Optional AsyncEngine instance (reused from client)
@@ -54,11 +54,11 @@ class AmazonSearchScraper:
             platform_name="amazon",
             cost_per_record=DEFAULT_COST_PER_RECORD,
         )
-    
+
     # ============================================================================
     # PRODUCTS SEARCH (by keyword + filters)
     # ============================================================================
-    
+
     async def products_async(
         self,
         keyword: Optional[Union[str, List[str]]] = None,
@@ -73,7 +73,7 @@ class AmazonSearchScraper:
     ) -> ScrapeResult:
         """
         Search Amazon products by keyword and filters (async).
-        
+
         Args:
             keyword: Search keyword(s) (e.g., "laptop", "wireless headphones")
             url: Category or search URL(s) (optional, alternative to keyword)
@@ -84,10 +84,10 @@ class AmazonSearchScraper:
             prime_eligible: Filter for Prime-eligible products only (optional)
             country: Country code(s) - 2-letter format like "US", "UK" (optional)
             timeout: Operation timeout in seconds (default: 240)
-        
+
         Returns:
             ScrapeResult with matching products
-        
+
         Example:
             >>> # Search by keyword
             >>> result = await scraper.products_async(
@@ -96,7 +96,7 @@ class AmazonSearchScraper:
             ...     max_price=200000,  # $2000 in cents
             ...     prime_eligible=True
             ... )
-            >>> 
+            >>>
             >>> # Search by category URL
             >>> result = await scraper.products_async(
             ...     url="https://www.amazon.com/s?k=laptop&i=electronics"
@@ -105,10 +105,9 @@ class AmazonSearchScraper:
         # At least one search criteria required
         if not any([keyword, url, category]):
             raise ValidationError(
-                "At least one search parameter required "
-                "(keyword, url, or category)"
+                "At least one search parameter required " "(keyword, url, or category)"
             )
-        
+
         # Determine batch size (use longest list)
         batch_size = 1
         if keyword and isinstance(keyword, list):
@@ -117,7 +116,7 @@ class AmazonSearchScraper:
             batch_size = max(batch_size, len(url))
         if category and isinstance(category, list):
             batch_size = max(batch_size, len(category))
-        
+
         # Normalize all parameters to lists
         keywords = self._normalize_param(keyword, batch_size)
         urls = self._normalize_param(url, batch_size)
@@ -126,7 +125,7 @@ class AmazonSearchScraper:
         max_prices = self._normalize_param(max_price, batch_size)
         conditions = self._normalize_param(condition, batch_size)
         countries = self._normalize_param(country, batch_size)
-        
+
         # Build payload - Amazon API requires URLs
         # If keyword provided, build Amazon search URL internally
         payload = []
@@ -146,15 +145,15 @@ class AmazonSearchScraper:
                     country=countries[i] if countries and i < len(countries) else None,
                 )
                 item = {"url": search_url}
-            
+
             payload.append(item)
-        
+
         return await self._execute_search(
             payload=payload,
             dataset_id=self.DATASET_ID_PRODUCTS_SEARCH,
             timeout=timeout,
         )
-    
+
     def products(
         self,
         keyword: Optional[Union[str, List[str]]] = None,
@@ -169,9 +168,9 @@ class AmazonSearchScraper:
     ) -> ScrapeResult:
         """
         Search Amazon products by keyword and filters (sync).
-        
+
         See products_async() for documentation.
-        
+
         Example:
             >>> result = scraper.products(
             ...     keyword="laptop",
@@ -180,6 +179,7 @@ class AmazonSearchScraper:
             ...     prime_eligible=True
             ... )
         """
+
         async def _run():
             async with self.engine:
                 return await self.products_async(
@@ -191,38 +191,37 @@ class AmazonSearchScraper:
                     condition=condition,
                     prime_eligible=prime_eligible,
                     country=country,
-                    timeout=timeout
+                    timeout=timeout,
                 )
+
         return asyncio.run(_run())
-    
+
     # ============================================================================
     # HELPER METHODS
     # ============================================================================
-    
+
     def _normalize_param(
-        self,
-        param: Optional[Union[str, int, List[str], List[int]]],
-        target_length: int
+        self, param: Optional[Union[str, int, List[str], List[int]]], target_length: int
     ) -> Optional[List]:
         """
         Normalize parameter to list.
-        
+
         Args:
             param: String, int, or list
             target_length: Desired list length
-        
+
         Returns:
             List, or None if param is None
         """
         if param is None:
             return None
-        
+
         if isinstance(param, (str, int)):
             # Repeat single value for batch
             return [param] * target_length
-        
+
         return param
-    
+
     def _build_amazon_search_url(
         self,
         keyword: Optional[str] = None,
@@ -235,10 +234,10 @@ class AmazonSearchScraper:
     ) -> str:
         """
         Build Amazon search URL from parameters.
-        
+
         Amazon API requires URLs, not raw search parameters.
         This method constructs a valid Amazon search URL from the provided filters.
-        
+
         Args:
             keyword: Search keyword
             category: Category name or ID
@@ -247,10 +246,10 @@ class AmazonSearchScraper:
             condition: Product condition
             prime_eligible: Prime eligible filter
             country: Country code
-        
+
         Returns:
             Amazon search URL
-        
+
         Example:
             >>> _build_amazon_search_url(
             ...     keyword="laptop",
@@ -261,7 +260,7 @@ class AmazonSearchScraper:
             'https://www.amazon.com/s?k=laptop&rh=p_36%3A50000-200000%2Cp_85%3A2470955011'
         """
         from urllib.parse import urlencode, quote_plus
-        
+
         # Determine domain based on country
         domain_map = {
             "US": "amazon.com",
@@ -277,31 +276,31 @@ class AmazonSearchScraper:
             "BR": "amazon.com.br",
             "AU": "amazon.com.au",
         }
-        
+
         domain = domain_map.get(country.upper() if country else "US", "amazon.com")
         base_url = f"https://www.{domain}/s"
-        
+
         params = {}
         rh_parts = []  # refinement parameters
-        
+
         # Keyword
         if keyword:
             params["k"] = keyword
-        
+
         # Category
         if category:
             params["i"] = category
-        
+
         # Price range (p_36: price in cents)
         if min_price is not None or max_price is not None:
             min_p = min_price or 0
             max_p = max_price or 999999999
             rh_parts.append(f"p_36:{min_p}-{max_p}")
-        
+
         # Prime eligible (p_85: Prime)
         if prime_eligible:
             rh_parts.append("p_85:2470955011")
-        
+
         # Condition (p_n_condition-type)
         if condition:
             condition_map = {
@@ -311,19 +310,19 @@ class AmazonSearchScraper:
             }
             if condition.lower() in condition_map:
                 rh_parts.append(condition_map[condition.lower()])
-        
+
         # Add refinement parameters
         if rh_parts:
             params["rh"] = ",".join(rh_parts)
-        
+
         # Build URL
         if params:
             url = f"{base_url}?{urlencode(params)}"
         else:
             url = base_url
-        
+
         return url
-    
+
     async def _execute_search(
         self,
         payload: List[Dict[str, Any]],
@@ -332,18 +331,18 @@ class AmazonSearchScraper:
     ) -> ScrapeResult:
         """
         Execute search operation via trigger/poll/fetch.
-        
+
         Args:
             payload: Search parameters
             dataset_id: Amazon dataset ID
             timeout: Operation timeout
-        
+
         Returns:
             ScrapeResult with search results
         """
         # Use workflow executor for trigger/poll/fetch
         sdk_function = get_caller_function_name()
-        
+
         result = await self.workflow_executor.execute(
             payload=payload,
             dataset_id=dataset_id,
@@ -352,6 +351,5 @@ class AmazonSearchScraper:
             include_errors=True,
             sdk_function=sdk_function,
         )
-        
-        return result
 
+        return result

@@ -9,9 +9,9 @@ from ...core.engine import AsyncEngine
 
 class BingSERPService(BaseSERPService):
     """Bing Search Engine Results Page service."""
-    
+
     SEARCH_ENGINE = "bing"
-    
+
     def __init__(
         self,
         engine: AsyncEngine,
@@ -28,4 +28,3 @@ class BingSERPService(BaseSERPService):
             timeout=timeout,
             max_retries=max_retries,
         )
-

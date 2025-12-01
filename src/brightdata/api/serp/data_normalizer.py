@@ -8,7 +8,7 @@ from ...types import NormalizedSERPData
 
 class BaseDataNormalizer(ABC):
     """Base class for SERP data normalization."""
-    
+
     @abstractmethod
     def normalize(self, data: Any) -> NormalizedSERPData:
         """Normalize SERP data to consistent format."""
@@ -17,7 +17,7 @@ class BaseDataNormalizer(ABC):
 
 class GoogleDataNormalizer(BaseDataNormalizer):
     """Data normalizer for Google SERP responses."""
-    
+
     # Length of prefix to check for HTML detection
     HTML_DETECTION_PREFIX_LENGTH = 200
 
@@ -38,10 +38,10 @@ class GoogleDataNormalizer(BaseDataNormalizer):
             # Check if body is HTML with improved detection
             body_lower = body.strip().lower()
             is_html = (
-                body_lower.startswith(("<html", "<!doctype", "<!DOCTYPE")) or
-                "<html" in body_lower[:self.HTML_DETECTION_PREFIX_LENGTH]
+                body_lower.startswith(("<html", "<!doctype", "<!DOCTYPE"))
+                or "<html" in body_lower[: self.HTML_DETECTION_PREFIX_LENGTH]
             )
-            
+
             if is_html:
                 warnings.warn(
                     "SERP API returned raw HTML instead of parsed JSON. "
@@ -52,7 +52,7 @@ class GoogleDataNormalizer(BaseDataNormalizer):
                     "The raw HTML is available in the 'raw_html' field of the response. "
                     "Consider using an HTML parser (e.g., BeautifulSoup) to extract results.",
                     UserWarning,
-                    stacklevel=3
+                    stacklevel=3,
                 )
                 return {
                     "results": [],
@@ -64,13 +64,15 @@ class GoogleDataNormalizer(BaseDataNormalizer):
         organic = data.get("organic", [])
 
         for i, item in enumerate(organic, 1):
-            results.append({
-                "position": item.get("rank", i),
-                "title": item.get("title", ""),
-                "url": item.get("link", item.get("url", "")),
-                "description": item.get("description", ""),
-                "displayed_url": item.get("display_link", item.get("displayed_url", "")),
-            })
+            results.append(
+                {
+                    "position": item.get("rank", i),
+                    "title": item.get("title", ""),
+                    "url": item.get("link", item.get("url", "")),
+                    "description": item.get("description", ""),
+                    "displayed_url": item.get("display_link", item.get("displayed_url", "")),
+                }
+            )
 
         normalized: NormalizedSERPData = {
             "results": results,
@@ -98,7 +100,7 @@ class GoogleDataNormalizer(BaseDataNormalizer):
 
 class BingDataNormalizer(BaseDataNormalizer):
     """Data normalizer for Bing SERP responses."""
-    
+
     def normalize(self, data: Any) -> NormalizedSERPData:
         """Normalize Bing SERP data."""
         if isinstance(data, dict):
@@ -108,10 +110,9 @@ class BingDataNormalizer(BaseDataNormalizer):
 
 class YandexDataNormalizer(BaseDataNormalizer):
     """Data normalizer for Yandex SERP responses."""
-    
+
     def normalize(self, data: Any) -> NormalizedSERPData:
         """Normalize Yandex SERP data."""
         if isinstance(data, dict):
             return data
         return {"results": data if isinstance(data, list) else []}
-

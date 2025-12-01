@@ -12,24 +12,22 @@ from ..utils import create_client, output_result, handle_error
 @click.option(
     "--api-key",
     envvar="BRIGHTDATA_API_TOKEN",
-    help="Bright Data API key (or set BRIGHTDATA_API_TOKEN env var)"
+    help="Bright Data API key (or set BRIGHTDATA_API_TOKEN env var)",
 )
 @click.option(
     "--output-format",
     type=click.Choice(["json", "pretty", "minimal"], case_sensitive=False),
     default="json",
-    help="Output format"
+    help="Output format",
 )
-@click.option(
-    "--output-file",
-    type=click.Path(),
-    help="Save output to file"
-)
+@click.option("--output-file", type=click.Path(), help="Save output to file")
 @click.pass_context
-def scrape_group(ctx: click.Context, api_key: Optional[str], output_format: str, output_file: Optional[str]) -> None:
+def scrape_group(
+    ctx: click.Context, api_key: Optional[str], output_format: str, output_file: Optional[str]
+) -> None:
     """
     Scrape operations - URL-based data extraction.
-    
+
     Extract data from specific URLs using specialized scrapers.
     """
     ctx.ensure_object(dict)
@@ -42,6 +40,7 @@ def scrape_group(ctx: click.Context, api_key: Optional[str], output_format: str,
 # Generic Scraper
 # ============================================================================
 
+
 @scrape_group.command("generic")
 @click.argument("url", required=True)
 @click.option("--country", default="", help="Country code for targeting")
@@ -51,7 +50,9 @@ def scrape_generic(ctx: click.Context, url: str, country: str, response_format: 
     """Scrape any URL using generic web scraper."""
     try:
         client = create_client(ctx.obj["api_key"])
-        result = client.scrape.generic.url(url=url, country=country, response_format=response_format)
+        result = client.scrape.generic.url(
+            url=url, country=country, response_format=response_format
+        )
         output_result(result, ctx.obj["output_format"], ctx.obj["output_file"])
     except Exception as e:
         handle_error(e)
@@ -61,6 +62,7 @@ def scrape_generic(ctx: click.Context, url: str, country: str, response_format: 
 # ============================================================================
 # Amazon Scraper
 # ============================================================================
+
 
 @scrape_group.group("amazon")
 def amazon_group() -> None:
@@ -96,17 +98,13 @@ def amazon_reviews(
     past_days: Optional[int],
     keyword: Optional[str],
     num_reviews: Optional[int],
-    timeout: int
+    timeout: int,
 ) -> None:
     """Scrape Amazon product reviews from URL."""
     try:
         client = create_client(ctx.obj["api_key"])
         result = client.scrape.amazon.reviews(
-            url=url,
-            pastDays=past_days,
-            keyWord=keyword,
-            numOfReviews=num_reviews,
-            timeout=timeout
+            url=url, pastDays=past_days, keyWord=keyword, numOfReviews=num_reviews, timeout=timeout
         )
         output_result(result, ctx.obj["output_format"], ctx.obj["output_file"])
     except Exception as e:
@@ -132,6 +130,7 @@ def amazon_sellers(ctx: click.Context, url: str, timeout: int) -> None:
 # ============================================================================
 # LinkedIn Scraper
 # ============================================================================
+
 
 @scrape_group.group("linkedin")
 def linkedin_group() -> None:
@@ -203,6 +202,7 @@ def linkedin_companies(ctx: click.Context, url: str, timeout: int) -> None:
 # Facebook Scraper
 # ============================================================================
 
+
 @scrape_group.group("facebook")
 def facebook_group() -> None:
     """Facebook scraping operations."""
@@ -222,7 +222,7 @@ def facebook_posts_by_profile(
     num_posts: Optional[int],
     start_date: Optional[str],
     end_date: Optional[str],
-    timeout: int
+    timeout: int,
 ) -> None:
     """Scrape Facebook posts from profile URL."""
     try:
@@ -232,7 +232,7 @@ def facebook_posts_by_profile(
             num_of_posts=num_posts,
             start_date=start_date,
             end_date=end_date,
-            timeout=timeout
+            timeout=timeout,
         )
         output_result(result, ctx.obj["output_format"], ctx.obj["output_file"])
     except Exception as e:
@@ -253,7 +253,7 @@ def facebook_posts_by_group(
     num_posts: Optional[int],
     start_date: Optional[str],
     end_date: Optional[str],
-    timeout: int
+    timeout: int,
 ) -> None:
     """Scrape Facebook posts from group URL."""
     try:
@@ -263,7 +263,7 @@ def facebook_posts_by_group(
             num_of_posts=num_posts,
             start_date=start_date,
             end_date=end_date,
-            timeout=timeout
+            timeout=timeout,
         )
         output_result(result, ctx.obj["output_format"], ctx.obj["output_file"])
     except Exception as e:
@@ -299,7 +299,7 @@ def facebook_comments(
     num_comments: Optional[int],
     start_date: Optional[str],
     end_date: Optional[str],
-    timeout: int
+    timeout: int,
 ) -> None:
     """Scrape Facebook comments from post URL."""
     try:
@@ -309,7 +309,7 @@ def facebook_comments(
             num_of_comments=num_comments,
             start_date=start_date,
             end_date=end_date,
-            timeout=timeout
+            timeout=timeout,
         )
         output_result(result, ctx.obj["output_format"], ctx.obj["output_file"])
     except Exception as e:
@@ -330,7 +330,7 @@ def facebook_reels(
     num_posts: Optional[int],
     start_date: Optional[str],
     end_date: Optional[str],
-    timeout: int
+    timeout: int,
 ) -> None:
     """Scrape Facebook reels from profile URL."""
     try:
@@ -340,7 +340,7 @@ def facebook_reels(
             num_of_posts=num_posts,
             start_date=start_date,
             end_date=end_date,
-            timeout=timeout
+            timeout=timeout,
         )
         output_result(result, ctx.obj["output_format"], ctx.obj["output_file"])
     except Exception as e:
@@ -351,6 +351,7 @@ def facebook_reels(
 # ============================================================================
 # Instagram Scraper
 # ============================================================================
+
 
 @scrape_group.group("instagram")
 def instagram_group() -> None:
@@ -422,6 +423,7 @@ def instagram_reels(ctx: click.Context, url: str, timeout: int) -> None:
 # ChatGPT Scraper
 # ============================================================================
 
+
 @scrape_group.group("chatgpt")
 def chatgpt_group() -> None:
     """ChatGPT scraping operations."""
@@ -441,7 +443,7 @@ def chatgpt_prompt(
     country: str,
     web_search: bool,
     additional_prompt: Optional[str],
-    timeout: int
+    timeout: int,
 ) -> None:
     """Send a prompt to ChatGPT."""
     try:
@@ -450,10 +452,9 @@ def chatgpt_prompt(
             prompt=prompt,
             country=country,
             web_search=web_search,
-            additional_prompt=additional_prompt
+            additional_prompt=additional_prompt,
         )
         output_result(result, ctx.obj["output_format"], ctx.obj["output_file"])
     except Exception as e:
         handle_error(e)
         raise click.Abort()
-

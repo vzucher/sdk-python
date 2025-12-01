@@ -6,6 +6,7 @@ from enum import Enum
 
 class LocationFormat(Enum):
     """Location code format for different search engines."""
+
     GOOGLE = "google"  # Lowercase 2-letter codes
     BING = "bing"  # Uppercase 2-letter codes
     YANDEX = "yandex"  # Numeric region IDs
@@ -13,7 +14,7 @@ class LocationFormat(Enum):
 
 class LocationService:
     """Unified location parsing service for all SERP engines."""
-    
+
     # Common country mappings
     COUNTRY_MAP: Dict[str, str] = {
         "united states": "us",
@@ -46,7 +47,7 @@ class LocationService:
         "new zealand": "nz",
         "south africa": "za",
     }
-    
+
     # Yandex-specific numeric region IDs
     YANDEX_REGION_MAP: Dict[str, str] = {
         "russia": "225",
@@ -55,35 +56,31 @@ class LocationService:
         "kazakhstan": "159",
         "turkey": "983",
     }
-    
+
     @classmethod
-    def parse_location(
-        cls,
-        location: str,
-        format: LocationFormat = LocationFormat.GOOGLE
-    ) -> str:
+    def parse_location(cls, location: str, format: LocationFormat = LocationFormat.GOOGLE) -> str:
         """
         Parse location string to engine-specific code.
-        
+
         Args:
             location: Location name or code
             format: Target format (GOOGLE, BING, or YANDEX)
-        
+
         Returns:
             Location code in the requested format
         """
         if not location:
             return cls._get_default(format)
-        
+
         location_lower = location.lower().strip()
-        
+
         # Check if already a 2-letter country code
         if len(location_lower) == 2 and format != LocationFormat.YANDEX:
             code = location_lower
         else:
             # Look up in country mapping
             code = cls.COUNTRY_MAP.get(location_lower, cls._get_default(format))
-        
+
         # Format according to engine requirements
         if format == LocationFormat.GOOGLE:
             return code.lower()
@@ -94,7 +91,7 @@ class LocationService:
             return cls.YANDEX_REGION_MAP.get(location_lower, "225")
         else:
             return code
-    
+
     @classmethod
     def _get_default(cls, format: LocationFormat) -> str:
         """Get default location code for format."""
@@ -106,4 +103,3 @@ class LocationService:
             return "225"
         else:
             return "us"
-

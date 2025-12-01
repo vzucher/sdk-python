@@ -1,2 +1,1 @@
 """Event hooks system."""
-

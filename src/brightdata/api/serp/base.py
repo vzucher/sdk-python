@@ -21,15 +21,15 @@ from ...utils.function_detection import get_caller_function_name
 class BaseSERPService:
     """
     Base class for SERP (Search Engine Results Page) services.
-    
+
     Uses dependency injection for URL building and data normalization
     to follow single responsibility principle.
     """
-    
+
     SEARCH_ENGINE: str = ""
     ENDPOINT = "/request"
     DEFAULT_TIMEOUT = 30
-    
+
     def __init__(
         self,
         engine: AsyncEngine,
@@ -40,7 +40,7 @@ class BaseSERPService:
     ):
         """
         Initialize SERP service.
-        
+
         Args:
             engine: AsyncEngine for HTTP operations
             url_builder: URL builder for this search engine
@@ -53,7 +53,7 @@ class BaseSERPService:
         self.data_normalizer = data_normalizer
         self.timeout = timeout or self.DEFAULT_TIMEOUT
         self.max_retries = max_retries
-    
+
     async def search_async(
         self,
         query: Union[str, List[str]],
@@ -62,11 +62,11 @@ class BaseSERPService:
         language: str = "en",
         device: str = "desktop",
         num_results: int = 10,
-        **kwargs
+        **kwargs,
     ) -> Union[SearchResult, List[SearchResult]]:
         """
         Perform search asynchronously.
-        
+
         Args:
             query: Search query string or list of queries
             zone: Bright Data zone for SERP API
@@ -75,16 +75,16 @@ class BaseSERPService:
             device: Device type
             num_results: Number of results to return
             **kwargs: Engine-specific parameters
-        
+
         Returns:
             SearchResult for single query, List[SearchResult] for multiple
         """
         is_single = isinstance(query, str)
         query_list = [query] if is_single else query
-        
+
         self._validate_zone(zone)
         self._validate_queries(query_list)
-        
+
         if len(query_list) == 1:
             result = await self._search_single_async(
                 query=query_list[0],
@@ -93,7 +93,7 @@ class BaseSERPService:
                 language=language,
                 device=device,
                 num_results=num_results,
-                **kwargs
+                **kwargs,
             )
             return result
         else:
@@ -104,13 +104,13 @@ class BaseSERPService:
                 language=language,
                 device=device,
                 num_results=num_results,
-                **kwargs
+                **kwargs,
             )
-    
+
     def search(self, *args, **kwargs):
         """Synchronous search wrapper."""
         return asyncio.run(self.search_async(*args, **kwargs))
-    
+
     async def _search_single_async(
         self,
         query: str,
@@ -119,40 +119,40 @@ class BaseSERPService:
         language: str,
         device: str,
         num_results: int,
-        **kwargs
+        **kwargs,
     ) -> SearchResult:
         """Execute single search query with retry logic."""
         trigger_sent_at = datetime.now(timezone.utc)
-        
+
         search_url = self.url_builder.build(
             query=query,
             location=location,
             language=language,
             device=device,
             num_results=num_results,
-            **kwargs
+            **kwargs,
         )
-        
+
         # Use "json" format when brd_json=1 is in URL (enables Bright Data parsing)
         # Otherwise use "raw" to get HTML response
         response_format = "json" if "brd_json=1" in search_url else "raw"
-        
+
         payload = {
             "zone": zone,
             "url": search_url,
             "format": response_format,
             "method": "GET",
         }
-        
+
         sdk_function = get_caller_function_name()
         if sdk_function:
             payload["sdk_function"] = sdk_function
-        
+
         async def _make_request():
             async with self.engine.post_to_url(
                 f"{self.engine.BASE_URL}{self.ENDPOINT}",
                 json_data=payload,
-                timeout=aiohttp.ClientTimeout(total=self.timeout)
+                timeout=aiohttp.ClientTimeout(total=self.timeout),
             ) as response:
                 data_fetched_at = datetime.now(timezone.utc)
 
@@ -168,7 +168,7 @@ class BaseSERPService:
                         except Exception:
                             # If all else fails, treat as raw text/HTML
                             data = {"raw_html": text}
-                    
+
                     # Handle wrapped response format (status_code/headers/body)
                     if isinstance(data, dict) and "body" in data and "status_code" in data:
                         # This is a wrapped HTTP response - extract body
@@ -182,9 +182,9 @@ class BaseSERPService:
                                 data = json.loads(body) if isinstance(body, str) else body
                             except (json.JSONDecodeError, TypeError):
                                 data = {"body": body, "status_code": data.get("status_code")}
-                    
+
                     normalized_data = self.data_normalizer.normalize(data)
-                    
+
                     return SearchResult(
                         success=True,
                         query={"q": query, "location": location, "language": language},
@@ -206,7 +206,7 @@ class BaseSERPService:
                         trigger_sent_at=trigger_sent_at,
                         data_fetched_at=data_fetched_at,
                     )
-        
+
         try:
             result = await retry_with_backoff(
                 _make_request,
@@ -222,7 +222,7 @@ class BaseSERPService:
                 trigger_sent_at=trigger_sent_at,
                 data_fetched_at=datetime.now(timezone.utc),
             )
-    
+
     async def _search_multiple_async(
         self,
         queries: List[str],
@@ -231,7 +231,7 @@ class BaseSERPService:
         language: str,
         device: str,
         num_results: int,
-        **kwargs
+        **kwargs,
     ) -> List[SearchResult]:
         """Execute multiple search queries concurrently."""
         tasks = [
@@ -242,13 +242,13 @@ class BaseSERPService:
                 language=language,
                 device=device,
                 num_results=num_results,
-                **kwargs
+                **kwargs,
             )
             for q in queries
         ]
-        
+
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         processed_results = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
@@ -264,26 +264,25 @@ class BaseSERPService:
                 )
             else:
                 processed_results.append(result)
-        
+
         return processed_results
-    
+
     def _validate_queries(self, queries: List[str]) -> None:
         """Validate search queries."""
         if not queries:
             raise ValidationError("Query list cannot be empty")
-        
+
         for query in queries:
             if not query or not isinstance(query, str):
                 raise ValidationError(f"Invalid query: {query}. Must be non-empty string.")
-    
+
     def _validate_zone(self, zone: str) -> None:
         """
         Validate zone name format.
-        
+
         Note: This validates format only. Zone existence and SERP support
         are verified when the API request is made. If a zone doesn't support
         SERP, the API will return an error that will be caught and returned
         as a SearchResult with error field.
         """
         validate_zone_name(zone)
-

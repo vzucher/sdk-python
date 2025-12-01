@@ -6,7 +6,7 @@ This module provides type definitions for API responses and configuration.
 NOTE: Payload types have been migrated to dataclasses in payloads.py for:
 - Runtime validation
 - Default values
-- Better IDE support  
+- Better IDE support
 - Consistent developer experience with result models
 
 For backward compatibility, TypedDict versions are kept here but deprecated.
@@ -47,8 +47,10 @@ from .payloads import (
 # DEPRECATED: TypedDict payloads kept for backward compatibility only
 # Use dataclass versions from payloads.py for new code
 
+
 class DatasetTriggerPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.DatasetTriggerPayload (dataclass) instead."""
+
     url: str
     keyword: str
     location: str
@@ -58,6 +60,7 @@ class DatasetTriggerPayload(TypedDict, total=False):
 
 class AmazonProductPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.AmazonProductPayload (dataclass) instead."""
+
     url: str
     reviews_count: NotRequired[int]
     images_count: NotRequired[int]
@@ -65,6 +68,7 @@ class AmazonProductPayload(TypedDict, total=False):
 
 class AmazonReviewPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.AmazonReviewPayload (dataclass) instead."""
+
     url: str
     pastDays: NotRequired[int]
     keyWord: NotRequired[str]
@@ -73,26 +77,31 @@ class AmazonReviewPayload(TypedDict, total=False):
 
 class LinkedInProfilePayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.LinkedInProfilePayload (dataclass) instead."""
+
     url: str
 
 
 class LinkedInJobPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.LinkedInJobPayload (dataclass) instead."""
+
     url: str
 
 
 class LinkedInCompanyPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.LinkedInCompanyPayload (dataclass) instead."""
+
     url: str
 
 
 class LinkedInPostPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.LinkedInPostPayload (dataclass) instead."""
+
     url: str
 
 
 class LinkedInProfileSearchPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.LinkedInProfileSearchPayload (dataclass) instead."""
+
     firstName: str
     lastName: NotRequired[str]
     title: NotRequired[str]
@@ -103,6 +112,7 @@ class LinkedInProfileSearchPayload(TypedDict, total=False):
 
 class LinkedInJobSearchPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.LinkedInJobSearchPayload (dataclass) instead."""
+
     url: NotRequired[str]
     keyword: NotRequired[str]
     location: NotRequired[str]
@@ -117,6 +127,7 @@ class LinkedInJobSearchPayload(TypedDict, total=False):
 
 class LinkedInPostSearchPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.LinkedInPostSearchPayload (dataclass) instead."""
+
     profile_url: str
     start_date: NotRequired[str]
     end_date: NotRequired[str]
@@ -124,6 +135,7 @@ class LinkedInPostSearchPayload(TypedDict, total=False):
 
 class ChatGPTPromptPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.ChatGPTPromptPayload (dataclass) instead."""
+
     prompt: str
     country: NotRequired[str]
     web_search: NotRequired[bool]
@@ -132,6 +144,7 @@ class ChatGPTPromptPayload(TypedDict, total=False):
 
 class FacebookPostsProfilePayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.FacebookPostsProfilePayload (dataclass) instead."""
+
     url: str
     num_of_posts: NotRequired[int]
     posts_to_not_include: NotRequired[List[str]]
@@ -141,6 +154,7 @@ class FacebookPostsProfilePayload(TypedDict, total=False):
 
 class FacebookPostsGroupPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.FacebookPostsGroupPayload (dataclass) instead."""
+
     url: str
     num_of_posts: NotRequired[int]
     posts_to_not_include: NotRequired[List[str]]
@@ -150,11 +164,13 @@ class FacebookPostsGroupPayload(TypedDict, total=False):
 
 class FacebookPostPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.FacebookPostPayload (dataclass) instead."""
+
     url: str
 
 
 class FacebookCommentsPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.FacebookCommentsPayload (dataclass) instead."""
+
     url: str
     num_of_comments: NotRequired[int]
     comments_to_not_include: NotRequired[List[str]]
@@ -164,6 +180,7 @@ class FacebookCommentsPayload(TypedDict, total=False):
 
 class FacebookReelsPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.FacebookReelsPayload (dataclass) instead."""
+
     url: str
     num_of_posts: NotRequired[int]
     posts_to_not_include: NotRequired[List[str]]
@@ -173,26 +190,31 @@ class FacebookReelsPayload(TypedDict, total=False):
 
 class InstagramProfilePayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.InstagramProfilePayload (dataclass) instead."""
+
     url: str
 
 
 class InstagramPostPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.InstagramPostPayload (dataclass) instead."""
+
     url: str
 
 
 class InstagramCommentPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.InstagramCommentPayload (dataclass) instead."""
+
     url: str
 
 
 class InstagramReelPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.InstagramReelPayload (dataclass) instead."""
+
     url: str
 
 
 class InstagramPostsDiscoverPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.InstagramPostsDiscoverPayload (dataclass) instead."""
+
     url: str
     num_of_posts: NotRequired[int]
     posts_to_not_include: NotRequired[List[str]]
@@ -203,6 +225,7 @@ class InstagramPostsDiscoverPayload(TypedDict, total=False):
 
 class InstagramReelsDiscoverPayload(TypedDict, total=False):
     """DEPRECATED: Use payloads.InstagramReelsDiscoverPayload (dataclass) instead."""
+
     url: str
     num_of_posts: NotRequired[int]
     posts_to_not_include: NotRequired[List[str]]
@@ -212,22 +235,26 @@ class InstagramReelsDiscoverPayload(TypedDict, total=False):
 
 class TriggerResponse(TypedDict):
     """Response from /datasets/v3/trigger."""
+
     snapshot_id: str
 
 
 class ProgressResponse(TypedDict):
     """Response from /datasets/v3/progress/{snapshot_id}."""
+
     status: Literal["ready", "in_progress", "error", "failed"]
     progress: NotRequired[int]
 
 
 class SnapshotResponse(TypedDict):
     """Response from /datasets/v3/snapshot/{snapshot_id}."""
+
     data: List[Dict[str, Any]]
 
 
 class ZoneInfo(TypedDict, total=False):
     """Zone information from API."""
+
     name: str
     zone: NotRequired[str]
     status: NotRequired[str]
@@ -250,6 +277,7 @@ OptionalStringParam = Optional[Union[str, List[str]]]
 
 class AccountInfo(TypedDict):
     """Account information returned by get_account_info()."""
+
     customer_id: Optional[str]
     zones: List[ZoneInfo]
     zone_count: int
@@ -259,6 +287,7 @@ class AccountInfo(TypedDict):
 
 class SERPOrganicResult(TypedDict, total=False):
     """Single organic search result."""
+
     position: int
     title: str
     url: str
@@ -268,6 +297,7 @@ class SERPOrganicResult(TypedDict, total=False):
 
 class SERPFeaturedSnippet(TypedDict, total=False):
     """Featured snippet in SERP."""
+
     title: str
     description: str
     url: str
@@ -275,6 +305,7 @@ class SERPFeaturedSnippet(TypedDict, total=False):
 
 class SERPKnowledgePanel(TypedDict, total=False):
     """Knowledge panel in SERP."""
+
     title: str
     type: str
     description: str
@@ -282,6 +313,7 @@ class SERPKnowledgePanel(TypedDict, total=False):
 
 class NormalizedSERPData(TypedDict, total=False):
     """Normalized SERP data structure."""
+
     results: List[SERPOrganicResult]
     total_results: NotRequired[int]
     featured_snippet: NotRequired[SERPFeaturedSnippet]

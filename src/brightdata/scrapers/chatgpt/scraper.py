@@ -22,14 +22,14 @@ from ...exceptions import ValidationError
 class ChatGPTScraper(BaseWebScraper):
     """
     ChatGPT interaction scraper.
-    
+
     Provides access to ChatGPT through Bright Data's ChatGPT dataset.
     Supports prompts with optional web search and follow-up conversations.
-    
+
     Methods:
         prompt(): Single prompt interaction
         prompts(): Batch prompt processing
-    
+
     Example:
         >>> scraper = ChatGPTScraper(bearer_token="token")
         >>> result = scraper.prompt(
@@ -38,16 +38,16 @@ class ChatGPTScraper(BaseWebScraper):
         ... )
         >>> print(result.data)
     """
-    
+
     DATASET_ID = "gd_m7aof0k82r803d5bjm"  # ChatGPT dataset
     PLATFORM_NAME = "chatgpt"
     MIN_POLL_TIMEOUT = DEFAULT_TIMEOUT_LONG  # ChatGPT usually responds faster
     COST_PER_RECORD = COST_PER_RECORD_CHATGPT  # ChatGPT interactions cost more
-    
+
     # ============================================================================
     # PROMPT METHODS
     # ============================================================================
-    
+
     async def prompt_async(
         self,
         prompt: str,
@@ -59,7 +59,7 @@ class ChatGPTScraper(BaseWebScraper):
     ) -> ScrapeResult:
         """
         Send single prompt to ChatGPT (async).
-        
+
         Args:
             prompt: The prompt/question to send to ChatGPT
             country: Country code for ChatGPT region
@@ -67,10 +67,10 @@ class ChatGPTScraper(BaseWebScraper):
             additional_prompt: Follow-up prompt after initial response
             poll_interval: Seconds between status checks
             poll_timeout: Maximum seconds to wait
-        
+
         Returns:
             ScrapeResult with ChatGPT response
-        
+
         Example:
             >>> result = await scraper.prompt_async(
             ...     prompt="What are the latest trends in AI?",
@@ -80,22 +80,24 @@ class ChatGPTScraper(BaseWebScraper):
         """
         if not prompt or not isinstance(prompt, str):
             raise ValidationError("Prompt must be a non-empty string")
-        
+
         # Build payload - ChatGPT scraper requires url field pointing to ChatGPT
-        payload = [{
-            "url": "https://chatgpt.com/",
-            "prompt": prompt,
-            "country": country.upper(),
-            "web_search": web_search,
-        }]
+        payload = [
+            {
+                "url": "https://chatgpt.com/",
+                "prompt": prompt,
+                "country": country.upper(),
+                "web_search": web_search,
+            }
+        ]
 
         if additional_prompt:
             payload[0]["additional_prompt"] = additional_prompt
-        
+
         # Execute workflow
         timeout = poll_timeout or self.MIN_POLL_TIMEOUT
         sdk_function = get_caller_function_name()
-        
+
         result = await self.workflow_executor.execute(
             payload=payload,
             dataset_id=self.DATASET_ID,
@@ -105,31 +107,29 @@ class ChatGPTScraper(BaseWebScraper):
             sdk_function=sdk_function,
             normalize_func=self.normalize_result,
         )
-        
+
         return result
-    
-    def prompt(
-        self,
-        prompt: str,
-        **kwargs
-    ) -> ScrapeResult:
+
+    def prompt(self, prompt: str, **kwargs) -> ScrapeResult:
         """
         Send prompt to ChatGPT (sync).
-        
+
         See prompt_async() for full documentation.
-        
+
         Example:
             >>> result = scraper.prompt("Explain Python asyncio")
         """
+
         async def _run():
             async with self.engine:
                 return await self.prompt_async(prompt, **kwargs)
+
         return asyncio.run(_run())
-    
+
     # ============================================================================
     # PROMPT TRIGGER/STATUS/FETCH (Manual Control)
     # ============================================================================
-    
+
     async def prompt_trigger_async(
         self,
         prompt: str,
@@ -139,34 +139,33 @@ class ChatGPTScraper(BaseWebScraper):
     ) -> "ScrapeJob":
         """Trigger ChatGPT prompt (async - manual control)."""
         from ..job import ScrapeJob
-        
+
         if not prompt or not isinstance(prompt, str):
             raise ValidationError("Prompt must be a non-empty string")
-        
+
         # Build payload
-        payload = [{
-            "url": "https://chatgpt.com/",
-            "prompt": prompt,
-            "country": country.upper(),
-            "web_search": web_search,
-        }]
-        
+        payload = [
+            {
+                "url": "https://chatgpt.com/",
+                "prompt": prompt,
+                "country": country.upper(),
+                "web_search": web_search,
+            }
+        ]
+
         if additional_prompt:
             payload[0]["additional_prompt"] = additional_prompt
-        
+
         # Trigger the scrape
-        snapshot_id = await self.api_client.trigger(
-            payload=payload,
-            dataset_id=self.DATASET_ID
-        )
-        
+        snapshot_id = await self.api_client.trigger(payload=payload, dataset_id=self.DATASET_ID)
+
         return ScrapeJob(
             snapshot_id=snapshot_id,
             api_client=self.api_client,
             platform_name=self.PLATFORM_NAME,
             cost_per_record=self.COST_PER_RECORD,
         )
-    
+
     def prompt_trigger(
         self,
         prompt: str,
@@ -175,24 +174,26 @@ class ChatGPTScraper(BaseWebScraper):
         additional_prompt: Optional[str] = None,
     ) -> "ScrapeJob":
         """Trigger ChatGPT prompt (sync wrapper)."""
-        return asyncio.run(self.prompt_trigger_async(prompt, country, web_search, additional_prompt))
-    
+        return asyncio.run(
+            self.prompt_trigger_async(prompt, country, web_search, additional_prompt)
+        )
+
     async def prompt_status_async(self, snapshot_id: str) -> str:
         """Check ChatGPT prompt status (async)."""
         return await self._check_status_async(snapshot_id)
-    
+
     def prompt_status(self, snapshot_id: str) -> str:
         """Check ChatGPT prompt status (sync wrapper)."""
         return asyncio.run(self.prompt_status_async(snapshot_id))
-    
+
     async def prompt_fetch_async(self, snapshot_id: str) -> Any:
         """Fetch ChatGPT prompt results (async)."""
         return await self._fetch_results_async(snapshot_id)
-    
+
     def prompt_fetch(self, snapshot_id: str) -> Any:
         """Fetch ChatGPT prompt results (sync wrapper)."""
         return asyncio.run(self.prompt_fetch_async(snapshot_id))
-    
+
     async def prompts_async(
         self,
         prompts: List[str],
@@ -204,7 +205,7 @@ class ChatGPTScraper(BaseWebScraper):
     ) -> ScrapeResult:
         """
         Send multiple prompts to ChatGPT in batch (async).
-        
+
         Args:
             prompts: List of prompts to send
             countries: List of country codes (one per prompt, optional)
@@ -212,10 +213,10 @@ class ChatGPTScraper(BaseWebScraper):
             additional_prompts: List of follow-up prompts (optional)
             poll_interval: Seconds between status checks
             poll_timeout: Maximum seconds to wait
-        
+
         Returns:
             ScrapeResult with list of ChatGPT responses
-        
+
         Example:
             >>> result = await scraper.prompts_async(
             ...     prompts=[
@@ -228,7 +229,7 @@ class ChatGPTScraper(BaseWebScraper):
         """
         if not prompts or not isinstance(prompts, list):
             raise ValidationError("Prompts must be a non-empty list")
-        
+
         # Build batch payload - ChatGPT scraper requires url field
         payload = []
         for i, prompt in enumerate(prompts):
@@ -243,11 +244,11 @@ class ChatGPTScraper(BaseWebScraper):
                 item["additional_prompt"] = additional_prompts[i]
 
             payload.append(item)
-        
+
         # Execute workflow
         timeout = poll_timeout or self.MIN_POLL_TIMEOUT
         sdk_function = get_caller_function_name()
-        
+
         result = await self.workflow_executor.execute(
             payload=payload,
             dataset_id=self.DATASET_ID,
@@ -257,28 +258,26 @@ class ChatGPTScraper(BaseWebScraper):
             sdk_function=sdk_function,
             normalize_func=self.normalize_result,
         )
-        
+
         return result
-    
-    def prompts(
-        self,
-        prompts: List[str],
-        **kwargs
-    ) -> ScrapeResult:
+
+    def prompts(self, prompts: List[str], **kwargs) -> ScrapeResult:
         """
         Send multiple prompts (sync).
-        
+
         See prompts_async() for full documentation.
         """
+
         async def _run():
             async with self.engine:
                 return await self.prompts_async(prompts, **kwargs)
+
         return asyncio.run(_run())
-    
+
     # ============================================================================
     # PROMPTS TRIGGER/STATUS/FETCH (Manual Control for batch)
     # ============================================================================
-    
+
     async def prompts_trigger_async(
         self,
         prompts: List[str],
@@ -288,10 +287,10 @@ class ChatGPTScraper(BaseWebScraper):
     ) -> "ScrapeJob":
         """Trigger ChatGPT batch prompts (async - manual control)."""
         from ..job import ScrapeJob
-        
+
         if not prompts or not isinstance(prompts, list):
             raise ValidationError("Prompts must be a non-empty list")
-        
+
         # Build batch payload
         payload = []
         for i, prompt in enumerate(prompts):
@@ -304,20 +303,17 @@ class ChatGPTScraper(BaseWebScraper):
             if additional_prompts and i < len(additional_prompts):
                 item["additional_prompt"] = additional_prompts[i]
             payload.append(item)
-        
+
         # Trigger the scrape
-        snapshot_id = await self.api_client.trigger(
-            payload=payload,
-            dataset_id=self.DATASET_ID
-        )
-        
+        snapshot_id = await self.api_client.trigger(payload=payload, dataset_id=self.DATASET_ID)
+
         return ScrapeJob(
             snapshot_id=snapshot_id,
             api_client=self.api_client,
             platform_name=self.PLATFORM_NAME,
             cost_per_record=self.COST_PER_RECORD,
         )
-    
+
     def prompts_trigger(
         self,
         prompts: List[str],
@@ -326,43 +322,43 @@ class ChatGPTScraper(BaseWebScraper):
         additional_prompts: Optional[List[str]] = None,
     ) -> "ScrapeJob":
         """Trigger ChatGPT batch prompts (sync wrapper)."""
-        return asyncio.run(self.prompts_trigger_async(prompts, countries, web_searches, additional_prompts))
-    
+        return asyncio.run(
+            self.prompts_trigger_async(prompts, countries, web_searches, additional_prompts)
+        )
+
     async def prompts_status_async(self, snapshot_id: str) -> str:
         """Check ChatGPT batch prompts status (async)."""
         return await self._check_status_async(snapshot_id)
-    
+
     def prompts_status(self, snapshot_id: str) -> str:
         """Check ChatGPT batch prompts status (sync wrapper)."""
         return asyncio.run(self.prompts_status_async(snapshot_id))
-    
+
     async def prompts_fetch_async(self, snapshot_id: str) -> Any:
         """Fetch ChatGPT batch prompts results (async)."""
         return await self._fetch_results_async(snapshot_id)
-    
+
     def prompts_fetch(self, snapshot_id: str) -> Any:
         """Fetch ChatGPT batch prompts results (sync wrapper)."""
         return asyncio.run(self.prompts_fetch_async(snapshot_id))
-    
+
     # ============================================================================
     # SCRAPE OVERRIDE (ChatGPT doesn't use URL-based scraping)
     # ============================================================================
-    
+
     async def scrape_async(
-        self,
-        urls: Union[str, List[str]],
-        **kwargs
+        self, urls: Union[str, List[str]], **kwargs
     ) -> Union[ScrapeResult, List[ScrapeResult]]:
         """
         ChatGPT doesn't support URL-based scraping.
-        
+
         Use prompt() or prompts() methods instead.
         """
         raise NotImplementedError(
             "ChatGPT scraper doesn't support URL-based scraping. "
             "Use prompt() or prompts() methods instead."
         )
-    
+
     def scrape(self, urls: Union[str, List[str]], **kwargs):
         """ChatGPT doesn't support URL-based scraping."""
         raise NotImplementedError(

@@ -32,7 +32,7 @@ class ZoneManager:
     def __init__(self, engine):
         """
         Initialize zone manager.
-        
+
         Args:
             engine: AsyncEngine instance for making API calls
         """
@@ -43,7 +43,7 @@ class ZoneManager:
         web_unlocker_zone: str,
         serp_zone: Optional[str] = None,
         browser_zone: Optional[str] = None,
-        skip_verification: bool = False
+        skip_verification: bool = False,
     ) -> None:
         """
         Check if required zones exist and create them if they don't.
@@ -65,19 +65,19 @@ class ZoneManager:
         try:
             logger.info("Checking existing zones...")
             zones = await self._get_zones()
-            zone_names = {zone.get('name') for zone in zones}
+            zone_names = {zone.get("name") for zone in zones}
             logger.info(f"Found {len(zones)} existing zones")
 
             zones_to_create: List[Tuple[str, str]] = []
 
             # Check web unlocker zone
             if web_unlocker_zone not in zone_names:
-                zones_to_create.append((web_unlocker_zone, 'unblocker'))
+                zones_to_create.append((web_unlocker_zone, "unblocker"))
                 logger.info(f"Need to create web unlocker zone: {web_unlocker_zone}")
 
             # Check SERP zone
             if serp_zone and serp_zone not in zone_names:
-                zones_to_create.append((serp_zone, 'serp'))
+                zones_to_create.append((serp_zone, "serp"))
                 logger.info(f"Need to create SERP zone: {serp_zone}")
 
             # Browser zones are intentionally NOT checked here
@@ -96,7 +96,9 @@ class ZoneManager:
                     logger.info(f"Successfully created zone: {zone_name}")
                 except AuthenticationError as e:
                     # Re-raise with clear message - this is a permission issue
-                    logger.error(f"Failed to create zone '{zone_name}' due to insufficient permissions")
+                    logger.error(
+                        f"Failed to create zone '{zone_name}' due to insufficient permissions"
+                    )
                     raise
                 except ZoneError as e:
                     # Log and re-raise zone errors
@@ -148,7 +150,7 @@ class ZoneManager:
 
         for attempt in range(max_retries):
             try:
-                async with self.engine.get('/zone/get_active_zones') as response:
+                async with self.engine.get("/zone/get_active_zones") as response:
                     if response.status == HTTP_OK:
                         zones = await response.json()
                         return zones or []
@@ -159,16 +161,17 @@ class ZoneManager:
                         )
                     else:
                         error_text = await response.text()
-                        if attempt < max_retries - 1 and response.status >= HTTP_INTERNAL_SERVER_ERROR:
+                        if (
+                            attempt < max_retries - 1
+                            and response.status >= HTTP_INTERNAL_SERVER_ERROR
+                        ):
                             logger.warning(
                                 f"Zone list request failed (attempt {attempt + 1}/{max_retries}): "
                                 f"{response.status} - {error_text}"
                             )
-                            await asyncio.sleep(retry_delay * (1.5 ** attempt))
+                            await asyncio.sleep(retry_delay * (1.5**attempt))
                             continue
-                        raise ZoneError(
-                            f"Failed to list zones ({response.status}): {error_text}"
-                        )
+                        raise ZoneError(f"Failed to list zones ({response.status}): {error_text}")
             except (AuthenticationError, ZoneError):
                 raise
             except (aiohttp.ClientError, asyncio.TimeoutError, OSError) as e:
@@ -176,7 +179,7 @@ class ZoneManager:
                     logger.warning(
                         f"Error getting zones (attempt {attempt + 1}/{max_retries}): {e}"
                     )
-                    await asyncio.sleep(retry_delay * (1.5 ** attempt))
+                    await asyncio.sleep(retry_delay * (1.5**attempt))
                     continue
                 raise ZoneError(f"Failed to get zones: {str(e)}")
 
@@ -196,29 +199,18 @@ class ZoneManager:
         """
         # Build zone configuration based on type
         if zone_type == "serp":
-            plan_config = {
-                "type": "unblocker",
-                "serp": True
-            }
+            plan_config = {"type": "unblocker", "serp": True}
         else:
-            plan_config = {
-                "type": zone_type
-            }
+            plan_config = {"type": zone_type}
 
-        payload = {
-            "plan": plan_config,
-            "zone": {
-                "name": zone_name,
-                "type": zone_type
-            }
-        }
+        payload = {"plan": plan_config, "zone": {"name": zone_name, "type": zone_type}}
 
         max_retries = 3
         retry_delay = 1.0
 
         for attempt in range(max_retries):
             try:
-                async with self.engine.post('/zone', json_data=payload) as response:
+                async with self.engine.post("/zone", json_data=payload) as response:
                     if response.status in (HTTP_OK, HTTP_CREATED):
                         logger.info(f"Zone creation successful: {zone_name}")
                         return
@@ -230,14 +222,20 @@ class ZoneManager:
                         error_text = await response.text()
 
                         # Check if error message indicates duplicate zone
-                        if "duplicate" in error_text.lower() or "already exists" in error_text.lower():
+                        if (
+                            "duplicate" in error_text.lower()
+                            or "already exists" in error_text.lower()
+                        ):
                             logger.info(f"Zone {zone_name} already exists - this is expected")
                             return
 
                         # Handle authentication/permission errors
                         if response.status in (HTTP_UNAUTHORIZED, HTTP_FORBIDDEN):
                             # Check for specific permission error
-                            if "permission" in error_text.lower() or "lacks the required" in error_text.lower():
+                            if (
+                                "permission" in error_text.lower()
+                                or "lacks the required" in error_text.lower()
+                            ):
                                 error_msg = (
                                     f"\n{'='*70}\n"
                                     f"❌ PERMISSION ERROR: Cannot create zone '{zone_name}'\n"
@@ -272,12 +270,15 @@ class ZoneManager:
                             )
 
                         # Retry on server errors
-                        if attempt < max_retries - 1 and response.status >= HTTP_INTERNAL_SERVER_ERROR:
+                        if (
+                            attempt < max_retries - 1
+                            and response.status >= HTTP_INTERNAL_SERVER_ERROR
+                        ):
                             logger.warning(
                                 f"Zone creation failed (attempt {attempt + 1}/{max_retries}): "
                                 f"{response.status} - {error_text}"
                             )
-                            await asyncio.sleep(retry_delay * (1.5 ** attempt))
+                            await asyncio.sleep(retry_delay * (1.5**attempt))
                             continue
 
                         raise ZoneError(
@@ -290,7 +291,7 @@ class ZoneManager:
                     logger.warning(
                         f"Error creating zone (attempt {attempt + 1}/{max_retries}): {e}"
                     )
-                    await asyncio.sleep(retry_delay * (1.5 ** attempt))
+                    await asyncio.sleep(retry_delay * (1.5**attempt))
                     continue
                 raise ZoneError(f"Failed to create zone '{zone_name}': {str(e)}")
 
@@ -315,12 +316,14 @@ class ZoneManager:
         for attempt in range(max_attempts):
             try:
                 # Calculate delay with exponential backoff
-                wait_time = base_delay * (1.5 ** attempt) if attempt > 0 else base_delay
-                logger.info(f"Verifying zone creation (attempt {attempt + 1}/{max_attempts}) after {wait_time:.1f}s...")
+                wait_time = base_delay * (1.5**attempt) if attempt > 0 else base_delay
+                logger.info(
+                    f"Verifying zone creation (attempt {attempt + 1}/{max_attempts}) after {wait_time:.1f}s..."
+                )
                 await asyncio.sleep(wait_time)
 
                 zones = await self._get_zones()
-                existing_zone_names = {zone.get('name') for zone in zones}
+                existing_zone_names = {zone.get("name") for zone in zones}
 
                 missing_zones = [name for name in zone_names if name not in existing_zone_names]
 
@@ -348,7 +351,7 @@ class ZoneManager:
                 if attempt == max_attempts - 1:
                     raise
                 logger.warning(f"Zone verification attempt {attempt + 1} failed, retrying...")
-                await asyncio.sleep(base_delay * (1.5 ** attempt))
+                await asyncio.sleep(base_delay * (1.5**attempt))
 
     async def list_zones(self) -> List[Dict[str, Any]]:
         """
@@ -400,13 +403,11 @@ class ZoneManager:
         for attempt in range(max_retries):
             try:
                 logger.info(f"Attempting to delete zone: {zone_name}")
-                
-                # Prepare the payload for zone deletion
-                payload = {
-                    "zone": zone_name
-                }
 
-                async with self.engine.delete('/zone', json_data=payload) as response:
+                # Prepare the payload for zone deletion
+                payload = {"zone": zone_name}
+
+                async with self.engine.delete("/zone", json_data=payload) as response:
                     if response.status == HTTP_OK:
                         logger.info(f"Zone '{zone_name}' successfully deleted")
                         return
@@ -418,7 +419,10 @@ class ZoneManager:
                     elif response.status == HTTP_BAD_REQUEST:
                         error_text = await response.text()
                         # Check if zone doesn't exist
-                        if "not found" in error_text.lower() or "does not exist" in error_text.lower():
+                        if (
+                            "not found" in error_text.lower()
+                            or "does not exist" in error_text.lower()
+                        ):
                             raise ZoneError(
                                 f"Zone '{zone_name}' does not exist or has already been deleted"
                             )
@@ -427,14 +431,17 @@ class ZoneManager:
                         )
                     else:
                         error_text = await response.text()
-                        
+
                         # Retry on server errors
-                        if attempt < max_retries - 1 and response.status >= HTTP_INTERNAL_SERVER_ERROR:
+                        if (
+                            attempt < max_retries - 1
+                            and response.status >= HTTP_INTERNAL_SERVER_ERROR
+                        ):
                             logger.warning(
                                 f"Zone deletion failed (attempt {attempt + 1}/{max_retries}): "
                                 f"{response.status} - {error_text}"
                             )
-                            await asyncio.sleep(retry_delay * (1.5 ** attempt))
+                            await asyncio.sleep(retry_delay * (1.5**attempt))
                             continue
 
                         raise ZoneError(
@@ -447,7 +454,7 @@ class ZoneManager:
                     logger.warning(
                         f"Error deleting zone (attempt {attempt + 1}/{max_retries}): {e}"
                     )
-                    await asyncio.sleep(retry_delay * (1.5 ** attempt))
+                    await asyncio.sleep(retry_delay * (1.5**attempt))
                     continue
                 raise ZoneError(f"Failed to delete zone '{zone_name}': {str(e)}")
 
