@@ -308,13 +308,12 @@ class TestZoneManagerEnsureZones:
 
     @pytest.mark.asyncio
     async def test_ensure_zones_with_browser(self, mock_engine):
-        """Test ensuring all three zone types."""
+        """Test ensuring unblocker and SERP zones (browser zones NOT auto-created)."""
         mock_engine.get.side_effect = [
             MockResponse(200, json_data=[]),
             MockResponse(200, json_data=[
                 {"name": "sdk_unlocker"},
-                {"name": "sdk_serp"},
-                {"name": "sdk_browser"}
+                {"name": "sdk_serp"}
             ])
         ]
         mock_engine.post.return_value = MockResponse(201)
@@ -323,31 +322,34 @@ class TestZoneManagerEnsureZones:
         await zone_manager.ensure_required_zones(
             web_unlocker_zone="sdk_unlocker",
             serp_zone="sdk_serp",
-            browser_zone="sdk_browser"
+            browser_zone="sdk_browser"  # This is passed but NOT created (by design)
         )
 
-        # Should create all three zones
-        assert mock_engine.post.call_count == 3
+        # Should only create unblocker + SERP zones (browser zones require manual setup)
+        assert mock_engine.post.call_count == 2
 
     @pytest.mark.asyncio
-    async def test_ensure_zones_verification_fails(self, mock_engine):
-        """Test zone creation when verification fails."""
-        # Zones never appear in verification
+    async def test_ensure_zones_verification_fails(self, mock_engine, caplog):
+        """Test zone creation when verification fails (logs warning but doesn't raise)."""
+        # Zones never appear in verification (max_attempts = 5, so need 6 total responses)
         mock_engine.get.side_effect = [
             MockResponse(200, json_data=[]),  # Initial list
             MockResponse(200, json_data=[]),  # Verification attempt 1
             MockResponse(200, json_data=[]),  # Verification attempt 2
-            MockResponse(200, json_data=[])   # Verification attempt 3
+            MockResponse(200, json_data=[]),  # Verification attempt 3
+            MockResponse(200, json_data=[]),  # Verification attempt 4
+            MockResponse(200, json_data=[])   # Verification attempt 5 (final)
         ]
         mock_engine.post.return_value = MockResponse(201)
 
         zone_manager = ZoneManager(mock_engine)
-        with pytest.raises(ZoneError) as exc_info:
-            await zone_manager.ensure_required_zones(
-                web_unlocker_zone="sdk_unlocker"
-            )
+        # Verification failure should log warning but NOT raise exception
+        await zone_manager.ensure_required_zones(
+            web_unlocker_zone="sdk_unlocker"
+        )
 
-        assert "verification failed" in str(exc_info.value).lower()
+        # Should have logged warning about verification failure
+        assert any("Zone verification failed" in record.message for record in caplog.records)
 
 
 class TestZoneManagerIntegration:

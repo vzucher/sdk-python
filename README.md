@@ -624,7 +624,8 @@ brightdata search google \
 # Generic web scraping (URL is positional argument)
 brightdata scrape generic \
   "https://example.com" \
-  --response-format pretty
+  --response-format raw \
+  --output-format pretty
 ```
 
 ### Available Commands
@@ -642,6 +643,44 @@ brightdata scrape generic \
 - `brightdata search instagram posts/reels`
 - `brightdata search google/bing/yandex`
 - `brightdata search chatgpt`
+
+### CLI Output Formats
+
+The CLI supports two different format parameters for different purposes:
+
+#### Global Output Format (`--output-format`)
+
+Controls **how results are displayed** (available for ALL commands):
+
+```bash
+# JSON format (default) - Full structured output
+brightdata scrape amazon products "https://amazon.com/dp/B123" --output-format json
+
+# Pretty format - Human-readable with formatted output
+brightdata scrape amazon products "https://amazon.com/dp/B123" --output-format pretty
+
+# Minimal format - Just the data, no metadata
+brightdata scrape amazon products "https://amazon.com/dp/B123" --output-format minimal
+```
+
+#### Generic Scraper Response Format (`--response-format`)
+
+Controls **what the API returns** (generic scraper only):
+
+```bash
+# Raw format (default) - Returns HTML/text as-is
+brightdata scrape generic "https://example.com" --response-format raw
+
+# JSON format - API attempts to parse as JSON
+brightdata scrape generic "https://api.example.com/data" --response-format json
+```
+
+**Note:** You can combine both:
+```bash
+brightdata scrape generic "https://example.com" \
+  --response-format raw \
+  --output-format pretty
+```
 
 ---
 
