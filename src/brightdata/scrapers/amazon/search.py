@@ -129,13 +129,14 @@ class AmazonSearchScraper:
         payload = []
         for i in range(batch_size):
             item = {}
-            
+
             # If URL provided directly, use it
             if urls and i < len(urls):
                 item["url"] = urls[i]
                 # Extract keyword from URL if possible for the keyword field
                 if "k=" in urls[i]:
                     import urllib.parse
+
                     parsed = urllib.parse.urlparse(urls[i])
                     params = urllib.parse.parse_qs(parsed.query)
                     item["keyword"] = params.get("k", [""])[0]
@@ -144,7 +145,7 @@ class AmazonSearchScraper:
             else:
                 # Send keyword directly (dataset expects this field)
                 item["keyword"] = keywords[i] if keywords and i < len(keywords) else ""
-                
+
                 # Optionally build URL for additional context
                 if item["keyword"]:
                     search_url = self._build_amazon_search_url(
@@ -157,7 +158,7 @@ class AmazonSearchScraper:
                         country=countries[i] if countries and i < len(countries) else None,
                     )
                     item["url"] = search_url
-            
+
             payload.append(item)
 
         return await self._execute_search(
